@@ -1,0 +1,3 @@
+@marlinprotocol/=lib/NitroProver/src/
+@solidity-cbor/=lib/solidity-cbor/packages/solidity-cbor/contracts/
+forge-std/=lib/forge-std/src/

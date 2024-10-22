@@ -21,6 +21,7 @@ import { DeployChain } from "src/DeployChain.sol";
 import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
 import { ResourceMetering } from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
 import { IResourceMetering } from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
+import "../nitro-validator/src/INitroValidator.sol";
 
 import { console2 as console } from "forge-std/console2.sol";
 
@@ -134,8 +135,21 @@ contract DeploySystem is Deploy {
     }
 
     function deploySystemConfigGlobal() public broadcast returns (address addr_) {
+        string memory filePath = string(abi.encodePacked(
+            "nitro-validator/deployments/",
+            vm.toString(block.chainid),
+            "-nitro-validator-deploy.json"
+        ));
+
+        if (!vm.exists(filePath)) {
+            revert("NitroValidator.json not found. Please deploy nitro-validator first.");
+        }
+
+        address nitroValidatorAddress = vm.parseJsonAddress(filePath, ".address");
+        INitroValidator nitroValidator = INitroValidator(nitroValidatorAddress);
+
         console.log("Deploying SystemConfigGlobal implementation");
-        addr_ = address(new SystemConfigGlobal{ salt: _implSalt() }());
+        addr_ = address(new SystemConfigGlobal{ salt: _implSalt() }(nitroValidator));
         save("SystemConfigGlobal", addr_);
         console.log("SystemConfigGlobal deployed at %s", addr_);
     }

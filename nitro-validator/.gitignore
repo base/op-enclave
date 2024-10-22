@@ -1,0 +1,8 @@
+/.idea/
+.DS_Store
+/out/
+/cache/
+/testnet/data/
+/testnet/.env
+/deployments/*-*-*.json
+/bin/
