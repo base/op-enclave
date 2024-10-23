@@ -4,11 +4,6 @@
 [submodule "lib/optimism"]
 	path = lib/optimism
 	url = https://github.com/ethereum-optimism/optimism
-
-# Nitro Validator 
-[submodule "nitro-validator/lib/NitroProver"]
-	path = nitro-validator/lib/NitroProver
+[submodule "lib/NitroProver"]
+	path = lib/NitroProver
 	url = https://github.com/mdehoog/NitroProver
-[submodule "nitro-validator/lib/forge-std"]
-	path = nitro-validator/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std

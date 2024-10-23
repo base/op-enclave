@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {Test, console} from "forge-std/Test.sol";
 
-import "@nitro-validator/src/INitroValidator.sol";
+import "../src/INitroValidator.sol";
 import "../src/SystemConfigGlobal.sol";
 
 // Mock NitroValidator contract
@@ -37,8 +37,7 @@ contract NitroValidatorTest is Test {
 
         mockValidator.setValidationResult(hex"d239fd059dd0e0a01e280bec44903bb8143bae7e578b9844c6df5fd6351eddc0", hex"17BF8F048519797BE90497001A7559A3D555395937117D76F8BAAEDF56CA6D97952DE79479BC0C76E5D176D20F663790");
 
-        string memory attestationFile = vm.readFile("./test/nitro-attestation/sample_attestation.json");
-        bytes memory attestation = abi.decode(vm.parseJson(attestationFile, ".attestation"), (bytes));
+        bytes memory attestation = vm.readFileBinary("./test/nitro-attestation/sample_attestation.bin");
 
         systemConfigGlobal.registerPCR0(hex"17BF8F048519797BE90497001A7559A3D555395937117D76F8BAAEDF56CA6D97952DE79479BC0C76E5D176D20F663790");
         

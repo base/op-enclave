@@ -16,7 +16,7 @@ contract NitroValidatorTest is Test {
         validator = new NitroValidator(manager);
     }
 
-    function test_validateAttestation() public {
+    function test_validateAttestation() public view {
         bytes memory attestation = vm.readFileBinary("./test/nitro-attestation/sample_attestation.bin");
 
         (bytes memory enclavePubKey, bytes memory pcr0) = validator.validateAttestation(attestation, 365 days);

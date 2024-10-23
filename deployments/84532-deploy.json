@@ -12,6 +12,7 @@
   "L1StandardBridgeProxy": "0xfADd9d89fdE7ba0D6053552820A5fEF42b5Fb2Af",
   "L2OutputOracle": "0xfd232ec44005Eed9287a8911cB24b491f642D344",
   "L2OutputOracleProxy": "0xe3047c1cFbc2C748DA9cdc9AF973cD74c14c4122",
+  "NitroValidator": "0x9fAca7Ad7f3D4499335150264B5e05277b3bFcc6",
   "OptimismMintableERC20Factory": "0x89ba073Ab54679d50b9660194875900171Ad1C4c",
   "OptimismMintableERC20FactoryProxy": "0x1025E8ee4f74743e4DC6acA35387A50d9A1e30A7",
   "OptimismPortal": "0x95a59D257723aABfe18b0C52e775ff98866a23f7",

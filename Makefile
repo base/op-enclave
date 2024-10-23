@@ -10,6 +10,11 @@ bindings:
 	abigen --abi out/Portal.sol/Portal.abi.json --pkg bindings --type Portal --out bindings/portal.go
 	abigen --abi out/DeployChain.sol/DeployChain.abi.json --pkg bindings --type DeployChain --out bindings/deploy_chain.go
 
+.PHONY: deploy-nitro-validator
+deploy-nitro-validator: guard-IMPL_SALT guard-DEPLOY_PRIVATE_KEY guard-RPC_URL
+	@forge script DeployNitroValidator --rpc-url $(RPC_URL) \
+		--private-key $(DEPLOY_PRIVATE_KEY) --broadcast
+
 .PHONY: deploy
 deploy: guard-IMPL_SALT guard-DEPLOY_CONFIG_PATH guard-DEPLOY_PRIVATE_KEY guard-RPC_URL
 	@forge script DeploySystem --sig deploy --rpc-url $(RPC_URL) \

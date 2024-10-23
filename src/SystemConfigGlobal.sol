@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ISemver } from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
-import "@nitro-validator/src/INitroValidator.sol";
+import "./INitroValidator.sol";
 
 contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
     /// @notice The AWS Nitro validator. 
