@@ -8,10 +8,7 @@
 # Nitro Validator 
 [submodule "nitro-validator/lib/NitroProver"]
 	path = nitro-validator/lib/NitroProver
-	url = https://github.com/marlinprotocol/NitroProver
-[submodule "nitro-validator/lib/solidity-cbor"]
-	path = nitro-validator/lib/solidity-cbor
-	url = https://github.com/marlinprotocol/solidity-cbor
+	url = https://github.com/mdehoog/NitroProver
 [submodule "nitro-validator/lib/forge-std"]
 	path = nitro-validator/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std

@@ -8,6 +8,6 @@ interface INitroValidator {
     /// @return enclavePubKey The enclave's public key
     /// @return pcr0 User data included in the attestation
     function validateAttestation(bytes memory attestation, uint256 maxAge)
-        external view
+        external
         returns (bytes memory enclavePubKey, bytes memory pcr0);
 }
