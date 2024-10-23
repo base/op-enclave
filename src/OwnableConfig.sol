@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 abstract contract OwnableConfig is Initializable, ContextUpgradeable {
     OwnerConfig public immutable ownerConfig;
 
-    constructor(OwnerConfig  _ownerConfig) {
+    constructor(OwnerConfig _ownerConfig) {
         ownerConfig = _ownerConfig;
     }
 

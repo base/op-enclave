@@ -2,20 +2,20 @@
 pragma solidity 0.8.15;
 
 // Contracts
-import { OwnableConfig } from "./OwnableConfig.sol";
-import { OwnerConfig } from "./OwnerConfig.sol";
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { SystemConfig } from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
+import {OwnableConfig} from "./OwnableConfig.sol";
+import {OwnerConfig} from "./OwnerConfig.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SystemConfig} from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
 
 // Libraries
-import { Storage } from "@eth-optimism-bedrock/src/libraries/Storage.sol";
-import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
-import { GasPayingToken, IGasToken } from "@eth-optimism-bedrock/src/libraries/GasPayingToken.sol";
+import {Storage} from "@eth-optimism-bedrock/src/libraries/Storage.sol";
+import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
+import {GasPayingToken, IGasToken} from "@eth-optimism-bedrock/src/libraries/GasPayingToken.sol";
 
 // Interfaces
-import { ISemver } from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
-import { IOptimismPortal } from "@eth-optimism-bedrock/src/L1/interfaces/IOptimismPortal.sol";
-import { IResourceMetering } from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
+import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
+import {IOptimismPortal} from "@eth-optimism-bedrock/src/L1/interfaces/IOptimismPortal.sol";
+import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
 
 /// @custom:proxied true
 /// @title SystemConfigOwnable
@@ -38,7 +38,7 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
 
     /// @notice Storage slot that the L1CrossDomainMessenger address is stored at.
     bytes32 public constant L1_CROSS_DOMAIN_MESSENGER_SLOT =
-    bytes32(uint256(keccak256("systemconfig.l1crossdomainmessenger")) - 1);
+        bytes32(uint256(keccak256("systemconfig.l1crossdomainmessenger")) - 1);
 
     /// @notice Storage slot that the L1ERC721Bridge address is stored at.
     bytes32 public constant L1_ERC_721_BRIDGE_SLOT = bytes32(uint256(keccak256("systemconfig.l1erc721bridge")) - 1);
@@ -51,7 +51,7 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
 
     /// @notice Storage slot that the OptimismMintableERC20Factory address is stored at.
     bytes32 public constant OPTIMISM_MINTABLE_ERC20_FACTORY_SLOT =
-    bytes32(uint256(keccak256("systemconfig.optimismmintableerc20factory")) - 1);
+        bytes32(uint256(keccak256("systemconfig.optimismmintableerc20factory")) - 1);
 
     /// @notice Storage slot that the batch inbox address is stored at.
     bytes32 public constant BATCH_INBOX_SLOT = bytes32(uint256(keccak256("systemconfig.batchinbox")) - 1);
@@ -61,7 +61,7 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
 
     /// @notice Storage slot for the DisputeGameFactory address.
     bytes32 public constant DISPUTE_GAME_FACTORY_SLOT =
-    bytes32(uint256(keccak256("systemconfig.disputegamefactory")) - 1);
+        bytes32(uint256(keccak256("systemconfig.disputegamefactory")) - 1);
 
     /// @notice The number of decimals that the gas paying token has.
     uint8 internal constant GAS_PAYING_TOKEN_DECIMALS = 18;
@@ -171,13 +171,10 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
         address _batchInbox,
         address _proposer,
         SystemConfig.Addresses memory _addresses
-    )
-        public
-        initializer
-    {
+    ) public initializer {
         // These are set in ascending order of their UpdateTypes.
         _setBatcherHash(_batcherHash);
-        _setGasConfigEcotone({ _basefeeScalar: _basefeeScalar, _blobbasefeeScalar: _blobbasefeeScalar });
+        _setGasConfigEcotone({_basefeeScalar: _basefeeScalar, _blobbasefeeScalar: _blobbasefeeScalar});
         _setGasLimit(_gasLimit);
 
         Storage.setAddress(UNSAFE_BLOCK_SIGNER_SLOT, _unsafeBlockSigner);
@@ -300,7 +297,7 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
             bytes32 symbol = GasPayingToken.sanitize(ERC20(_token).symbol());
 
             // Set the gas paying token in storage and in the OptimismPortal.
-            GasPayingToken.set({ _token: _token, _decimals: GAS_PAYING_TOKEN_DECIMALS, _name: name, _symbol: symbol });
+            GasPayingToken.set({_token: _token, _decimals: GAS_PAYING_TOKEN_DECIMALS, _name: name, _symbol: symbol});
             IOptimismPortal(payable(optimismPortal())).setGasPayingToken({
                 _token: _token,
                 _decimals: GAS_PAYING_TOKEN_DECIMALS,

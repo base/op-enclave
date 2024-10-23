@@ -2,29 +2,29 @@
 pragma solidity 0.8.15;
 
 // Contracts
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { ResourceMetering } from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
-import { L1Block } from "@eth-optimism-bedrock/src/L2/L1Block.sol";
-import { OutputOracle } from "./OutputOracle.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {ResourceMetering} from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
+import {L1Block} from "@eth-optimism-bedrock/src/L2/L1Block.sol";
+import {OutputOracle} from "./OutputOracle.sol";
 
 // Libraries
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { SafeCall } from "@eth-optimism-bedrock/src/libraries/SafeCall.sol";
-import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
-import { Types } from "@eth-optimism-bedrock/src/libraries/Types.sol";
-import { Hashing } from "@eth-optimism-bedrock/src/libraries/Hashing.sol";
-import { SecureMerkleTrie } from "@eth-optimism-bedrock/src/libraries/trie/SecureMerkleTrie.sol";
-import { Predeploys } from "@eth-optimism-bedrock/src/libraries/Predeploys.sol";
-import { AddressAliasHelper } from "@eth-optimism-bedrock/src/vendor/AddressAliasHelper.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeCall} from "@eth-optimism-bedrock/src/libraries/SafeCall.sol";
+import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
+import {Types} from "@eth-optimism-bedrock/src/libraries/Types.sol";
+import {Hashing} from "@eth-optimism-bedrock/src/libraries/Hashing.sol";
+import {SecureMerkleTrie} from "@eth-optimism-bedrock/src/libraries/trie/SecureMerkleTrie.sol";
+import {Predeploys} from "@eth-optimism-bedrock/src/libraries/Predeploys.sol";
+import {AddressAliasHelper} from "@eth-optimism-bedrock/src/vendor/AddressAliasHelper.sol";
 import "@eth-optimism-bedrock/src/libraries/PortalErrors.sol";
 
 // Interfaces
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IL2OutputOracle } from "@eth-optimism-bedrock/src/L1/interfaces/IL2OutputOracle.sol";
-import { ISystemConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
-import { IResourceMetering } from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
-import { ISuperchainConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
-import { ISemver } from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IL2OutputOracle} from "@eth-optimism-bedrock/src/L1/interfaces/IL2OutputOracle.sol";
+import {ISystemConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
+import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
+import {ISuperchainConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
+import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 
 /// @custom:proxied true
 /// @title OptimismPortal
@@ -115,11 +115,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @param _l2Oracle Contract of the L2OutputOracle.
     /// @param _systemConfig Contract of the SystemConfig.
     /// @param _superchainConfig Contract of the SuperchainConfig.
-    function initialize(
-        OutputOracle _l2Oracle,
-        ISystemConfig _systemConfig,
-        ISuperchainConfig _superchainConfig
-    )
+    function initialize(OutputOracle _l2Oracle, ISystemConfig _systemConfig, ISuperchainConfig _superchainConfig)
         public
         initializer
     {
@@ -213,9 +209,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         uint256 _l2OutputIndex,
         Types.OutputRootProof calldata _outputRootProof,
         bytes[] calldata _withdrawalProof
-    )
-        external
-    {
+    ) external {
         proveAndFinalizeWithdrawalTransaction(_tx, _l2OutputIndex, _outputRootProof, _withdrawalProof);
     }
 
@@ -235,10 +229,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         uint256 _l2OutputIndex,
         Types.OutputRootProof calldata _outputRootProof,
         bytes[] calldata _withdrawalProof
-    )
-        public
-        whenNotPaused
-    {
+    ) public whenNotPaused {
         // Prevent users from creating a deposit transaction where this address is the message
         // sender on L2.
         if (_tx.target == address(this)) revert BadTarget();
@@ -336,7 +327,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
                 // Transfer the ERC20 balance to the target, accounting for non standard ERC20
                 // implementations that may not return a boolean. This reverts if the low level
                 // call is not successful.
-                IERC20(token).safeTransfer({ to: _tx.target, value: _tx.value });
+                IERC20(token).safeTransfer({to: _tx.target, value: _tx.value});
 
                 // The balance must be transferred exactly.
                 if (IERC20(token).balanceOf(address(this)) != startBalance - _tx.value) {
@@ -384,10 +375,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         uint64 _gasLimit,
         bool _isCreation,
         bytes memory _data
-    )
-    public
-    metered(_gasLimit)
-    {
+    ) public metered(_gasLimit) {
         // Can only be called if an ERC20 token is used for gas paying on L2
         (address token,) = gasPayingToken();
         if (token == Constants.ETHER) revert OnlyCustomGasToken();
@@ -399,7 +387,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         uint256 startBalance = IERC20(token).balanceOf(address(this));
 
         // Take ownership of the token. It is assumed that the user has given the portal an approval.
-        IERC20(token).safeTransferFrom({ from: msg.sender, to: address(this), value: _mint });
+        IERC20(token).safeTransferFrom({from: msg.sender, to: address(this), value: _mint});
 
         // Double check that the portal now has the exact amount of token.
         if (IERC20(token).balanceOf(address(this)) != startBalance + _mint) {
@@ -425,13 +413,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @param _gasLimit   Amount of L2 gas to purchase by burning gas on L1.
     /// @param _isCreation Whether or not the transaction is a contract creation.
     /// @param _data       Data to trigger the recipient with.
-    function depositTransaction(
-        address _to,
-        uint256 _value,
-        uint64 _gasLimit,
-        bool _isCreation,
-        bytes memory _data
-    )
+    function depositTransaction(address _to, uint256 _value, uint64 _gasLimit, bool _isCreation, bytes memory _data)
         public
         payable
         metered(_gasLimit)
@@ -463,9 +445,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         uint64 _gasLimit,
         bool _isCreation,
         bytes memory _data
-    )
-        internal
-    {
+    ) internal {
         // Just to be safe, make sure that people specify address(0) as the target when doing
         // contract creations.
         if (_isCreation && _to != address(0)) revert BadTarget();

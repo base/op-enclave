@@ -18,11 +18,10 @@ contract DeployNitroValidator is Script {
         console.log("CertManager deployed at:", address(manager));
         console.log("NitroValidator deployed at:", address(validator));
 
-        string memory deploymentOutfile = string.concat(
-            vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-validator.json"
-        );
-        vm.writeJson({ json: vm.serializeAddress("", "CertManager", address(manager)), path: deploymentOutfile });
-        vm.writeJson({ json: vm.serializeAddress("", "NitroValidator", address(validator)), path: deploymentOutfile });
+        string memory deploymentOutfile =
+            string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-validator.json");
+        vm.writeJson({json: vm.serializeAddress("", "CertManager", address(manager)), path: deploymentOutfile});
+        vm.writeJson({json: vm.serializeAddress("", "NitroValidator", address(validator)), path: deploymentOutfile});
 
         vm.stopBroadcast();
     }

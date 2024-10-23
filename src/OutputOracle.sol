@@ -2,17 +2,17 @@
 pragma solidity 0.8.15;
 
 // Contracts
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { SystemConfigGlobal } from "./SystemConfigGlobal.sol";
-import { SystemConfigOwnable } from "./SystemConfigOwnable.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {SystemConfigGlobal} from "./SystemConfigGlobal.sol";
+import {SystemConfigOwnable} from "./SystemConfigOwnable.sol";
 
 // Libraries
-import { Types } from "@eth-optimism-bedrock/src/libraries/Types.sol";
-import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {Types} from "@eth-optimism-bedrock/src/libraries/Types.sol";
+import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 // Interfaces
-import { ISemver } from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
+import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 
 /// @custom:proxied true
 /// @title OutputOracle
@@ -62,28 +62,26 @@ contract OutputOracle is Initializable, ISemver {
     ///         in the getting-started config.
     /// @param _systemConfigGlobal  The global system config contract.
     /// @param _maxOutputCount      The maximum number of outputs stored by this contract.
-    constructor(
-        SystemConfigGlobal _systemConfigGlobal,
-        uint256 _maxOutputCount
-    ) {
+    constructor(SystemConfigGlobal _systemConfigGlobal, uint256 _maxOutputCount) {
         systemConfigGlobal = _systemConfigGlobal;
         maxOutputCount = _maxOutputCount;
         initialize(SystemConfigOwnable(address(0)), 0, 0);
     }
 
     /// @notice Initializer.
-    function initialize(
-        SystemConfigOwnable _systemConfig,
-        bytes32 _configHash,
-        bytes32 _genesisOutputRoot
-    ) public initializer {
+    function initialize(SystemConfigOwnable _systemConfig, bytes32 _configHash, bytes32 _genesisOutputRoot)
+        public
+        initializer
+    {
         systemConfig = _systemConfig;
         configHash = _configHash;
-        l2Outputs.push(Types.OutputProposal({
-            outputRoot: _genesisOutputRoot,
-            timestamp: uint128(block.timestamp),
-            l2BlockNumber: uint128(0)
-        }));
+        l2Outputs.push(
+            Types.OutputProposal({
+                outputRoot: _genesisOutputRoot,
+                timestamp: uint128(block.timestamp),
+                l2BlockNumber: uint128(0)
+            })
+        );
     }
 
     function proposer() public view returns (address) {
@@ -99,9 +97,7 @@ contract OutputOracle is Initializable, ISemver {
         uint256 _l2BlockNumber,
         uint256 _l1BlockNumber,
         bytes calldata _signature
-    )
-        external
-    {
+    ) external {
         require(msg.sender == proposer(), "OutputOracle: only the proposer address can propose new outputs");
 
         require(
@@ -116,8 +112,7 @@ contract OutputOracle is Initializable, ISemver {
 
         bytes32 previousOutputRoot = l2Outputs[latestOutputIndex].outputRoot;
         address signer = ECDSA.recover(
-            keccak256(abi.encodePacked(configHash, _blockHash, previousOutputRoot, _outputRoot)),
-            _signature
+            keccak256(abi.encodePacked(configHash, _blockHash, previousOutputRoot, _outputRoot)), _signature
         );
         require(systemConfigGlobal.validSigners(signer), "OutputOracle: invalid signature");
 

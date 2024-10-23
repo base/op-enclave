@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import { ISemver } from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 import "./INitroValidator.sol";
 
 contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
-    /// @notice The AWS Nitro validator. 
+    /// @notice The AWS Nitro validator.
     INitroValidator public immutable nitroValidator;
 
     /// @notice The address of the proposer.
@@ -27,9 +27,7 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
 
     constructor(INitroValidator _nitroValidator) {
         nitroValidator = _nitroValidator;
-        initialize({
-            _owner: address(0xdEaD)
-        });
+        initialize({_owner: address(0xdEaD)});
     }
 
     function initialize(address _owner) public initializer {
@@ -51,10 +49,10 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
 
     function registerSigner(bytes calldata attestation) external onlyOwner {
         (bytes memory enclavePublicKey, bytes memory pcr0) = nitroValidator.validateAttestation(attestation, 10 minutes);
-        require (validPCR0s[keccak256(pcr0)], "invalid pcr0 in attestation");
+        require(validPCR0s[keccak256(pcr0)], "invalid pcr0 in attestation");
 
         address enclaveAddress = address(uint160(uint256(keccak256(enclavePublicKey))));
-        validSigners[enclaveAddress] = true; 
+        validSigners[enclaveAddress] = true;
     }
 
     function deregisterSigner(address signer) external onlyOwner {

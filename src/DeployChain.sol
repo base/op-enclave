@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import { Portal } from "./Portal.sol";
-import { OutputOracle } from "./OutputOracle.sol";
-import { SystemConfigOwnable } from "./SystemConfigOwnable.sol";
-import { SystemConfig } from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
-import { ISystemConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
-import { OptimismPortal } from "@eth-optimism-bedrock/src/L1/OptimismPortal.sol";
-import { IOptimismPortal } from "@eth-optimism-bedrock/src/L1/interfaces/IOptimismPortal.sol";
-import { ISuperchainConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
-import { L2OutputOracle } from "@eth-optimism-bedrock/src/L1/L2OutputOracle.sol";
-import { L1StandardBridge } from "@eth-optimism-bedrock/src/L1/L1StandardBridge.sol";
-import { L1CrossDomainMessenger } from "@eth-optimism-bedrock/src/L1/L1CrossDomainMessenger.sol";
-import { ICrossDomainMessenger } from "@eth-optimism-bedrock/src/universal/interfaces/ICrossDomainMessenger.sol";
-import { L1ERC721Bridge } from "@eth-optimism-bedrock/src/L1/L1ERC721Bridge.sol";
-import { OptimismMintableERC20Factory } from "@eth-optimism-bedrock/src/universal/OptimismMintableERC20Factory.sol";
-import { ResourceMetering } from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
-import { Hashing } from "@eth-optimism-bedrock/src/libraries/Hashing.sol";
-import { Types } from "@eth-optimism-bedrock/src/libraries/Types.sol";
-import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
+import {Portal} from "./Portal.sol";
+import {OutputOracle} from "./OutputOracle.sol";
+import {SystemConfigOwnable} from "./SystemConfigOwnable.sol";
+import {SystemConfig} from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
+import {ISystemConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
+import {OptimismPortal} from "@eth-optimism-bedrock/src/L1/OptimismPortal.sol";
+import {IOptimismPortal} from "@eth-optimism-bedrock/src/L1/interfaces/IOptimismPortal.sol";
+import {ISuperchainConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
+import {L2OutputOracle} from "@eth-optimism-bedrock/src/L1/L2OutputOracle.sol";
+import {L1StandardBridge} from "@eth-optimism-bedrock/src/L1/L1StandardBridge.sol";
+import {L1CrossDomainMessenger} from "@eth-optimism-bedrock/src/L1/L1CrossDomainMessenger.sol";
+import {ICrossDomainMessenger} from "@eth-optimism-bedrock/src/universal/interfaces/ICrossDomainMessenger.sol";
+import {L1ERC721Bridge} from "@eth-optimism-bedrock/src/L1/L1ERC721Bridge.sol";
+import {OptimismMintableERC20Factory} from "@eth-optimism-bedrock/src/universal/OptimismMintableERC20Factory.sol";
+import {ResourceMetering} from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
+import {Hashing} from "@eth-optimism-bedrock/src/libraries/Hashing.sol";
+import {Types} from "@eth-optimism-bedrock/src/libraries/Types.sol";
+import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
 
 contract DeployChain {
     struct DeployAddresses {
@@ -37,14 +37,11 @@ contract DeployChain {
     }
 
     event Deploy(
-        uint256 indexed chainID,
-        bytes32 configHash,
-        bytes32 outputRoot,
-        address batchInbox,
-        DeployAddresses addresses
+        uint256 indexed chainID, bytes32 configHash, bytes32 outputRoot, address batchInbox, DeployAddresses addresses
     );
 
-    bytes32 public constant MESSAGE_PASSER_STORAGE_HASH = 0x8ed4baae3a927be3dea54996b4d5899f8c01e7594bf50b17dc1e741388ce3d12;
+    bytes32 public constant MESSAGE_PASSER_STORAGE_HASH =
+        0x8ed4baae3a927be3dea54996b4d5899f8c01e7594bf50b17dc1e741388ce3d12;
 
     address public immutable proxyAdmin;
     address public immutable optimismPortal;
@@ -185,30 +182,31 @@ contract DeployChain {
     ) internal pure returns (Hashes memory) {
         bytes32 scalar = bytes32((uint256(0x01) << 248) | (uint256(blobbasefeeScalar) << 32) | basefeeScalar);
 
-        bytes32 configHash = keccak256(abi.encodePacked(
-            uint64(0), // version
-            chainID,
-            genesisL1Hash,
-            genesisL2Hash,
-            genesisL2Time,
-            batcherAddress,
-            scalar,
-            gasLimit,
-            addresses.optimismPortal,
-            addresses.systemConfig
-        ));
+        bytes32 configHash = keccak256(
+            abi.encodePacked(
+                uint64(0), // version
+                chainID,
+                genesisL1Hash,
+                genesisL2Hash,
+                genesisL2Time,
+                batcherAddress,
+                scalar,
+                gasLimit,
+                addresses.optimismPortal,
+                addresses.systemConfig
+            )
+        );
 
-        bytes32 genesisOutputRoot = Hashing.hashOutputRootProof(Types.OutputRootProof({
-            version: 0,
-            stateRoot: genesisL2StateRoot,
-            messagePasserStorageRoot: MESSAGE_PASSER_STORAGE_HASH,
-            latestBlockhash: genesisL2Hash
-        }));
+        bytes32 genesisOutputRoot = Hashing.hashOutputRootProof(
+            Types.OutputRootProof({
+                version: 0,
+                stateRoot: genesisL2StateRoot,
+                messagePasserStorageRoot: MESSAGE_PASSER_STORAGE_HASH,
+                latestBlockhash: genesisL2Hash
+            })
+        );
 
-        return Hashes({
-            configHash: configHash,
-            genesisOutputRoot: genesisOutputRoot
-        });
+        return Hashes({configHash: configHash, genesisOutputRoot: genesisOutputRoot});
     }
 
     function initializeProxies(
@@ -223,9 +221,7 @@ contract DeployChain {
         DeployAddresses memory addresses
     ) internal {
         OutputOracle(addresses.l2OutputOracle).initialize(
-            SystemConfigOwnable(addresses.systemConfig),
-            hashes.configHash,
-            hashes.genesisOutputRoot
+            SystemConfigOwnable(addresses.systemConfig), hashes.configHash, hashes.genesisOutputRoot
         );
 
         SystemConfigOwnable(addresses.systemConfig).initialize({
@@ -267,13 +263,10 @@ contract DeployChain {
         );
 
         L1ERC721Bridge(addresses.l1ERC721Bridge).initialize(
-            ICrossDomainMessenger(addresses.l1CrossDomainMessenger),
-            ISuperchainConfig(superchainConfig)
+            ICrossDomainMessenger(addresses.l1CrossDomainMessenger), ISuperchainConfig(superchainConfig)
         );
 
-        OptimismMintableERC20Factory(addresses.optimismMintableERC20Factory).initialize(
-            addresses.l1StandardBridge
-        );
+        OptimismMintableERC20Factory(addresses.optimismMintableERC20Factory).initialize(addresses.l1StandardBridge);
     }
 
     function setupProxy(address proxy, bytes32 salt) internal returns (address instance) {

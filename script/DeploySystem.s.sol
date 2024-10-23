@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import { Deploy } from "@eth-optimism-bedrock/scripts/deploy/Deploy.s.sol";
-import { DeployConfig } from "@eth-optimism-bedrock/scripts/deploy/DeployConfig.s.sol";
-import { Types } from "@eth-optimism-bedrock/scripts/libraries/Types.sol";
-import { ChainAssertions } from "@eth-optimism-bedrock/scripts/deploy/ChainAssertions.sol";
-import { SystemConfig } from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
-import { ISystemConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
-import { ISuperchainConfig } from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
-import { SuperchainConfig } from "@eth-optimism-bedrock/src/L1/SuperchainConfig.sol";
-import { OptimismPortal } from "@eth-optimism-bedrock/src/L1/OptimismPortal.sol";
-import { IL2OutputOracle } from "@eth-optimism-bedrock/src/L1/interfaces/IL2OutputOracle.sol";
-import { ProtocolVersions } from "@eth-optimism-bedrock/src/L1/ProtocolVersions.sol";
-import { Portal } from "src/Portal.sol";
-import { OutputOracle } from "src/OutputOracle.sol";
-import { OwnerConfig } from "src/OwnerConfig.sol";
-import { SystemConfigOwnable } from "src/SystemConfigOwnable.sol";
-import { SystemConfigGlobal } from "src/SystemConfigGlobal.sol";
-import { DeployChain } from "src/DeployChain.sol";
-import { Constants } from "@eth-optimism-bedrock/src/libraries/Constants.sol";
-import { ResourceMetering } from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
-import { IResourceMetering } from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
+import {Deploy} from "@eth-optimism-bedrock/scripts/deploy/Deploy.s.sol";
+import {DeployConfig} from "@eth-optimism-bedrock/scripts/deploy/DeployConfig.s.sol";
+import {Types} from "@eth-optimism-bedrock/scripts/libraries/Types.sol";
+import {ChainAssertions} from "@eth-optimism-bedrock/scripts/deploy/ChainAssertions.sol";
+import {SystemConfig} from "@eth-optimism-bedrock/src/L1/SystemConfig.sol";
+import {ISystemConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISystemConfig.sol";
+import {ISuperchainConfig} from "@eth-optimism-bedrock/src/L1/interfaces/ISuperchainConfig.sol";
+import {SuperchainConfig} from "@eth-optimism-bedrock/src/L1/SuperchainConfig.sol";
+import {OptimismPortal} from "@eth-optimism-bedrock/src/L1/OptimismPortal.sol";
+import {IL2OutputOracle} from "@eth-optimism-bedrock/src/L1/interfaces/IL2OutputOracle.sol";
+import {ProtocolVersions} from "@eth-optimism-bedrock/src/L1/ProtocolVersions.sol";
+import {Portal} from "src/Portal.sol";
+import {OutputOracle} from "src/OutputOracle.sol";
+import {OwnerConfig} from "src/OwnerConfig.sol";
+import {SystemConfigOwnable} from "src/SystemConfigOwnable.sol";
+import {SystemConfigGlobal} from "src/SystemConfigGlobal.sol";
+import {DeployChain} from "src/DeployChain.sol";
+import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
+import {ResourceMetering} from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
+import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
 import "../src/INitroValidator.sol";
 
-import { console2 as console } from "forge-std/console2.sol";
+import {console2 as console} from "forge-std/console2.sol";
 
 contract DeploySystem is Deploy {
     function deploy() public {
@@ -121,14 +121,14 @@ contract DeploySystem is Deploy {
 
     function checkNitroValidator() public {
         console.log("Retrieving NitroValidator deploy");
-        string memory deploymentOutfile = string.concat(
-            vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-validator.json"
-        );
+        string memory deploymentOutfile =
+            string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-validator.json");
         address nitroValidatorAddress = vm.parseJsonAddress(vm.readFile(deploymentOutfile), ".NitroValidator");
         save("NitroValidator", nitroValidatorAddress);
 
         INitroValidator validator = INitroValidator(nitroValidatorAddress);
-        bytes memory attestation = vm.readFileBinary(string.concat(vm.projectRoot(), "/test/nitro-attestation/sample_attestation.bin"));
+        bytes memory attestation =
+            vm.readFileBinary(string.concat(vm.projectRoot(), "/test/nitro-attestation/sample_attestation.bin"));
 
         uint256 timestamp = vm.getBlockTimestamp();
         vm.warp(1708930774);
@@ -136,15 +136,17 @@ contract DeploySystem is Deploy {
         vm.warp(timestamp);
 
         vm.assertEq(enclavePubKey, hex"d239fd059dd0e0a01e280bec44903bb8143bae7e578b9844c6df5fd6351eddc0");
-        vm.assertEq(pcr0, hex"17BF8F048519797BE90497001A7559A3D555395937117D76F8BAAEDF56CA6D97952DE79479BC0C76E5D176D20F663790");
+        vm.assertEq(
+            pcr0, hex"17BF8F048519797BE90497001A7559A3D555395937117D76F8BAAEDF56CA6D97952DE79479BC0C76E5D176D20F663790"
+        );
     }
 
     function deploySystemConfigOwnable() public broadcast returns (address addr_) {
         console.log("Deploying OwnerConfig");
-        OwnerConfig ownerConfig = new OwnerConfig{ salt: _implSalt() }(cfg.finalSystemOwner());
+        OwnerConfig ownerConfig = new OwnerConfig{salt: _implSalt()}(cfg.finalSystemOwner());
 
         console.log("Deploying SystemConfig implementation");
-        addr_ = address(new SystemConfigOwnable{ salt: _implSalt() }(ownerConfig));
+        addr_ = address(new SystemConfigOwnable{salt: _implSalt()}(ownerConfig));
         save("SystemConfig", addr_);
         console.log("SystemConfig deployed at %s", addr_);
 
@@ -153,19 +155,19 @@ contract DeploySystem is Deploy {
         // are always proxies.
         Types.ContractSet memory contracts = _proxiesUnstrict();
         contracts.SystemConfig = addr_;
-        checkSystemConfig({ _contracts: contracts, _cfg: cfg, _isProxy: false });
+        checkSystemConfig({_contracts: contracts, _cfg: cfg, _isProxy: false});
     }
 
     function deploySystemConfigGlobal() public broadcast returns (address addr_) {
         console.log("Deploying SystemConfigGlobal implementation");
-        addr_ = address(new SystemConfigGlobal{ salt: _implSalt() }(INitroValidator(mustGetAddress("NitroValidator"))));
+        addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(INitroValidator(mustGetAddress("NitroValidator"))));
         save("SystemConfigGlobal", addr_);
         console.log("SystemConfigGlobal deployed at %s", addr_);
     }
 
     function deployPortal() public broadcast returns (address addr_) {
         console.log("Deploying OptimismPortal implementation");
-        addr_ = address(new Portal{ salt: _implSalt() }());
+        addr_ = address(new Portal{salt: _implSalt()}());
         save("OptimismPortal", addr_);
         console.log("OptimismPortal deployed at %s", addr_);
 
@@ -174,14 +176,14 @@ contract DeploySystem is Deploy {
         // are always proxies.
         Types.ContractSet memory contracts = _proxiesUnstrict();
         contracts.OptimismPortal = addr_;
-        ChainAssertions.checkOptimismPortal({ _contracts: contracts, _cfg: cfg, _isProxy: false });
+        ChainAssertions.checkOptimismPortal({_contracts: contracts, _cfg: cfg, _isProxy: false});
     }
 
     function deployOutputOracle() public broadcast returns (address addr_) {
         SystemConfigGlobal systemConfigGlobal = SystemConfigGlobal(mustGetAddress("SystemConfigGlobalProxy"));
 
         console.log("Deploying L2OutputOracle implementation");
-        OutputOracle oracle = new OutputOracle{ salt: _implSalt() }(
+        OutputOracle oracle = new OutputOracle{salt: _implSalt()}(
             systemConfigGlobal,
             1000 // TODO move to config
         );
@@ -194,18 +196,14 @@ contract DeploySystem is Deploy {
         // are always proxies.
         Types.ContractSet memory contracts = _proxiesUnstrict();
         contracts.L2OutputOracle = address(oracle);
-        checkL2OutputOracle({
-            _contracts: contracts,
-            _cfg: cfg,
-            _isProxy: false
-        });
+        checkL2OutputOracle({_contracts: contracts, _cfg: cfg, _isProxy: false});
 
         addr_ = address(oracle);
     }
 
     function deployDeployChain() public broadcast returns (address addr_) {
         console.log("Deploying DeployChain implementation");
-        DeployChain deployChain = new DeployChain{ salt: _implSalt() }({
+        DeployChain deployChain = new DeployChain{salt: _implSalt()}({
             _proxyAdmin: mustGetAddress("ProxyAdmin"),
             _optimismPortal: mustGetAddress("OptimismPortalProxy"),
             _systemConfig: mustGetAddress("SystemConfigProxy"),
@@ -262,7 +260,7 @@ contract DeploySystem is Deploy {
         string memory version = config.version();
         console.log("SystemConfig version: %s", version);
 
-        checkSystemConfig({ _contracts: _proxies(), _cfg: cfg, _isProxy: true });
+        checkSystemConfig({_contracts: _proxies(), _cfg: cfg, _isProxy: true});
     }
 
     function initializeSystemConfigGlobal() public broadcast {
@@ -306,7 +304,7 @@ contract DeploySystem is Deploy {
         string memory version = portal.version();
         console.log("OptimismPortal version: %s", version);
 
-        ChainAssertions.checkOptimismPortal({ _contracts: _proxies(), _cfg: cfg, _isProxy: true });
+        ChainAssertions.checkOptimismPortal({_contracts: _proxies(), _cfg: cfg, _isProxy: true});
     }
 
     function initializeOutputOracle() public broadcast {
@@ -318,35 +316,22 @@ contract DeploySystem is Deploy {
         _upgradeAndCallViaSafe({
             _proxy: payable(l2OutputOracleProxy),
             _implementation: l2OutputOracle,
-            _innerCallData: abi.encodeCall(
-                OutputOracle.initialize, (SystemConfigOwnable(systemConfigProxy), 0, 0)
-            )
+            _innerCallData: abi.encodeCall(OutputOracle.initialize, (SystemConfigOwnable(systemConfigProxy), 0, 0))
         });
 
         OutputOracle oracle = OutputOracle(l2OutputOracleProxy);
         string memory version = oracle.version();
         console.log("L2OutputOracle version: %s", version);
 
-        checkL2OutputOracle({
-            _contracts: _proxies(),
-            _cfg: cfg,
-            _isProxy: true
-        });
+        checkL2OutputOracle({_contracts: _proxies(), _cfg: cfg, _isProxy: true});
     }
 
-    function checkL2OutputOracle(
-        Types.ContractSet memory _contracts,
-        DeployConfig _cfg,
-        bool _isProxy
-    )
-    internal
-    view
-    {
+    function checkL2OutputOracle(Types.ContractSet memory _contracts, DeployConfig _cfg, bool _isProxy) internal view {
         console.log("Running chain assertions on the L2OutputOracle");
         OutputOracle oracle = OutputOracle(_contracts.L2OutputOracle);
 
         // Check that the contract is initialized
-        ChainAssertions.assertSlotValueIsOne({ _contractAddress: address(oracle), _slot: 0, _offset: 0 });
+        ChainAssertions.assertSlotValueIsOne({_contractAddress: address(oracle), _slot: 0, _offset: 0});
 
         if (_isProxy) {
             require(oracle.proposer() == _cfg.l2OutputOracleProposer());
@@ -360,7 +345,7 @@ contract DeploySystem is Deploy {
         SystemConfig config = SystemConfig(_contracts.SystemConfig);
 
         // Check that the contract is initialized
-        ChainAssertions.assertSlotValueIsOne({ _contractAddress: address(config), _slot: 0, _offset: 0 });
+        ChainAssertions.assertSlotValueIsOne({_contractAddress: address(config), _slot: 0, _offset: 0});
 
         IResourceMetering.ResourceConfig memory resourceConfig = config.resourceConfig();
 
