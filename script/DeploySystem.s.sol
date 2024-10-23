@@ -135,21 +135,26 @@ contract DeploySystem is Deploy {
     }
 
     function deploySystemConfigGlobal() public broadcast returns (address addr_) {
-        string memory filePath = string(abi.encodePacked(
-            "nitro-validator/deployments/",
-            vm.toString(block.chainid),
-            "-nitro-validator-deploy.json"
-        ));
+        console.log("Deploying CertManager / NitroValidator implementations");
+        bytes memory certManager = vm.parseJsonBytes(
+            vm.readFile("nitro-validator/out/CertManager.sol/CertManager.json"), ".bytecode.object");
+        bytes memory nitroValidator = vm.parseJsonBytes(
+            vm.readFile("nitro-validator/out/NitroValidator.sol/NitroValidator.json"), ".bytecode.object");
 
-        if (!vm.exists(filePath)) {
-            revert("NitroValidator.json not found. Please deploy nitro-validator first.");
+        bytes32 salt = _implSalt();
+        address certManagerAddress;
+        address nitroValidatorAddress;
+        assembly{
+            certManagerAddress := create2(0, add(certManager, 0x20), mload(certManager), salt)
+            if iszero(extcodesize(certManagerAddress)) { revert(0, 0) }
+//            nitroValidatorAddress := create2(0, add(nitroValidator, 0x20), mload(nitroValidator), salt)
+//            if iszero(extcodesize(nitroValidatorAddress)) { revert(0, 0) }
         }
-
-        address nitroValidatorAddress = vm.parseJsonAddress(filePath, ".address");
-        INitroValidator nitroValidator = INitroValidator(nitroValidatorAddress);
+        save("CertManager", certManagerAddress);
+        save("NitroValidator", nitroValidatorAddress);
 
         console.log("Deploying SystemConfigGlobal implementation");
-        addr_ = address(new SystemConfigGlobal{ salt: _implSalt() }(nitroValidator));
+        addr_ = address(new SystemConfigGlobal{ salt: _implSalt() }(INitroValidator(nitroValidatorAddress)));
         save("SystemConfigGlobal", addr_);
         console.log("SystemConfigGlobal deployed at %s", addr_);
     }
