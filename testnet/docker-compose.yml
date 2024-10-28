@@ -2,7 +2,7 @@ services:
   op-geth:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     ports:
       - "8545:8545"
     command: [ "bash", "./entrypoint-geth.sh" ]
@@ -13,7 +13,7 @@ services:
   op-node:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     depends_on:
       - op-geth
       - op-da
@@ -25,7 +25,7 @@ services:
   op-da:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     command: [ "bash", "./entrypoint-da.sh" ]
     volumes:
       - ./data/da:/data
@@ -34,7 +34,7 @@ services:
   op-batcher:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     depends_on:
       - op-geth
       - op-node
@@ -44,7 +44,7 @@ services:
   op-proposer:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     depends_on:
       - op-geth
       - op-node
@@ -54,7 +54,7 @@ services:
   op-enclave:
     build:
       context: ..
-      dockerfile: /Dockerfile
+      dockerfile: testnet/Dockerfile
     command: [ "bash", "./entrypoint-enclave.sh" ]
     env_file:
       - .env

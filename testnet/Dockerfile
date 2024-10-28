@@ -17,6 +17,9 @@ FROM golang:1.22 AS op-enclave
 
 WORKDIR /app
 
+COPY op-enclave/go.mod op-enclave/go.sum op-enclave/
+RUN cd op-enclave && go mod download
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -26,7 +29,7 @@ COPY op-batcher/ op-batcher/
 COPY op-da/ op-da/
 COPY op-proposer/ op-proposer/
 
-RUN go build -o bin/op-enclave ./op-enclave/cmd/enclave
+RUN cd op-enclave && go build -o ../bin/op-enclave ./cmd/enclave
 RUN go build -o bin/op-batcher ./op-batcher/cmd
 RUN go build -o bin/op-proposer ./op-proposer/cmd
 RUN go build -o bin/op-da ./op-da/cmd
