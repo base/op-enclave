@@ -16,17 +16,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/trie"
 	"github.com/hf/nitrite"
 	"github.com/hf/nsm"
 	"github.com/hf/nsm/request"
@@ -250,114 +247,20 @@ func (s *Server) ExecuteStateless(
 	messageAccount *eth.AccountResult,
 	prevMessageAccountHash common.Hash,
 ) (*Proposal, error) {
-	config := NewChainConfig(cfg)
-
-	l1OriginHash := l1Origin.Hash()
-	computed := types.DeriveSha(l1Receipts, trie.NewStackTrie(nil))
-	if computed != l1Origin.ReceiptHash {
-		return nil, errors.New("invalid receipts")
-	}
-
 	w := &stateless.Witness{}
 	err := rlp.DecodeBytes(witness, w)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode witness: %w", err)
 	}
 
+	config := NewChainConfig(cfg)
+	l1OriginHash := l1Origin.Hash()
 	previousBlockHeader := w.Headers[0]
-	previousBlockHash := previousBlockHeader.Hash()
-	if blockHeader.ParentHash != previousBlockHash {
-		return nil, errors.New("invalid parent hash")
-	}
 
-	unmarshalTxs := func(rlp []hexutil.Bytes) (types.Transactions, error) {
-		txs := make(types.Transactions, len(rlp))
-		for i, tx := range rlp {
-			txs[i] = new(types.Transaction)
-			if err := txs[i].UnmarshalBinary(tx); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal transaction: %w", err)
-			}
-		}
-		return txs, nil
-	}
-	previousTxs, err := unmarshalTxs(previousBlockTxs)
+	err = ExecuteStateless(ctx, config.ChainConfig, config.ToRollupConfig(),
+		l1Origin, l1Receipts, previousBlockTxs, blockHeader, blockTxs, w, messageAccount)
 	if err != nil {
 		return nil, err
-	}
-	txs, err := unmarshalTxs(blockTxs)
-	if err != nil {
-		return nil, err
-	}
-
-	previousTxHash := types.DeriveSha(previousTxs, trie.NewStackTrie(nil))
-	if previousTxHash != previousBlockHeader.TxHash {
-		return nil, errors.New("invalid tx hash")
-	}
-
-	previousBlock := types.NewBlockWithHeader(previousBlockHeader).WithBody(types.Body{
-		Transactions: previousTxs,
-	})
-
-	rollupConfig := config.ToRollupConfig()
-	l2Parent, err := derive.L2BlockToBlockRef(rollupConfig, previousBlock)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert L2 block to block ref: %w", err)
-	}
-
-	if l2Parent.L1Origin.Hash != l1OriginHash && l2Parent.L1Origin.Hash != l1Origin.ParentHash {
-		return nil, errors.New("invalid L1 origin")
-	}
-
-	l1Fetcher := NewL1ReceiptsFetcher(l1OriginHash, l1Origin, l1Receipts)
-	l2Fetcher := NewL2SystemConfigFetcher(rollupConfig, previousBlockHash, previousBlockHeader, previousTxs)
-	attributeBuilder := derive.NewFetchingAttributesBuilder(rollupConfig, l1Fetcher, l2Fetcher)
-	payload, err := attributeBuilder.PreparePayloadAttributes(context.Background(), l2Parent, eth.BlockID{
-		Hash:   l1OriginHash,
-		Number: l1Origin.Number.Uint64(),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare payload attributes: %w", err)
-	}
-
-	if txs.Len() < len(payload.Transactions) {
-		return nil, errors.New("invalid transaction count")
-	}
-
-	for i, payloadTx := range payload.Transactions {
-		tx := txs[i]
-		if !tx.IsDepositTx() {
-			return nil, errors.New("invalid transaction type")
-		}
-		if !bytes.Equal(blockTxs[i], payloadTx) {
-			return nil, errors.New("invalid deposit transaction")
-		}
-	}
-
-	// block must only contain deposit transactions if it is outside the sequencer drift
-	if txs.Len() > len(payload.Transactions) &&
-		blockHeader.Time > l1Origin.Time+maxSequencerDriftFjord {
-		return nil, errors.New("L1 origin is too old")
-	}
-
-	expectedRoot := blockHeader.Root
-	blockHeader.Root = common.Hash{}
-	blockHeader.ReceiptHash = common.Hash{}
-	block := types.NewBlockWithHeader(blockHeader).WithBody(types.Body{
-		Transactions: txs,
-	})
-	blockHeader.Root, blockHeader.ReceiptHash, err = core.ExecuteStateless(config.ChainConfig, block, w)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute stateless: %w", err)
-	}
-	if blockHeader.Root != expectedRoot {
-		return nil, errors.New("invalid state root")
-	}
-
-	if messageAccount.Address.Cmp(l2ToL1MessagePasserAddress) != 0 {
-		return nil, errors.New("invalid message account address")
-	}
-	if err = messageAccount.Verify(blockHeader.Root); err != nil {
-		return nil, fmt.Errorf("failed to verify message account: %w", err)
 	}
 
 	prevOutputRoot := outputRootV0(previousBlockHeader, prevMessageAccountHash)
