@@ -49,6 +49,25 @@ RUN git clone $REPO --branch $VERSION --single-branch . && \
 RUN go run build/ci.go install -static ./cmd/geth
 
 
+FROM ubuntu:22.04 AS op-reth
+
+WORKDIR /app
+
+RUN apt-get update && apt-get -y upgrade && apt-get install -y git libclang-dev pkg-config curl build-essential
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+ENV REPO=https://github.com/paradigmxyz/reth.git
+ENV VERSION=v1.1.0
+ENV COMMIT=1ba631ba9581973e7c6cadeea92cfe1802aceb4a
+RUN git clone $REPO --branch $VERSION --single-branch . && \
+    git switch -c branch-$VERSION && \
+    bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
+
+RUN cargo build --bin op-reth --features jemalloc,asm-keccak,optimism --profile maxperf --manifest-path crates/optimism/bin/Cargo.toml
+
+
 FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y curl jq
@@ -57,6 +76,7 @@ WORKDIR /app
 
 COPY --from=op-node /app/op-node/bin/op-node ./
 COPY --from=op-geth /app/build/bin/geth ./
+COPY --from=op-reth /app/target/maxperf/op-reth ./reth
 COPY --from=op-enclave /app/bin/op-enclave ./
 COPY --from=op-enclave /app/bin/op-batcher ./
 COPY --from=op-enclave /app/bin/op-proposer ./
