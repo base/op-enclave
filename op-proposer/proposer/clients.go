@@ -55,6 +55,10 @@ type ethClient struct {
 }
 
 func NewClient(client *ethclient.Client, metrics caching.Metrics) Client {
+	return newClient(client, metrics)
+}
+
+func newClient(client *ethclient.Client, metrics caching.Metrics) *ethClient {
 	cacheSize := 1000
 	return &ethClient{
 		client:        client,

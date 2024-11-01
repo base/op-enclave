@@ -4,10 +4,10 @@ go 1.22.6
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
+	github.com/base-org/op-enclave/op-enclave v0.0.0
 	github.com/ethereum-optimism/optimism v1.9.3
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/base-org/op-enclave/op-enclave v0.0.0
 	github.com/prometheus/client_golang v1.20.4
 	github.com/urfave/cli/v2 v2.27.4
 )
