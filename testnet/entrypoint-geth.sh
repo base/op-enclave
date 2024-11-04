@@ -3,14 +3,14 @@
 GETH_DATA_DIR=${GETH_DATA_DIR:-/data}
 GETH_CHAINDATA_DIR="$GETH_DATA_DIR/geth/chaindata"
 
-mkdir -p $GETH_DATA_DIR
+mkdir -p "$GETH_DATA_DIR"
 if [ ! -d "$GETH_CHAINDATA_DIR" ]; then
 	echo "$GETH_CHAINDATA_DIR missing, running init"
 	echo "Initializing genesis."
 	./geth init \
 		--datadir="$GETH_DATA_DIR" \
 		--state.scheme=hash \
-		"$OP_GETH_GENESIS_FILE_PATH"
+		"$GENESIS_FILE_PATH"
 else
 	echo "$GETH_CHAINDATA_DIR exists."
 fi
@@ -18,7 +18,7 @@ fi
 echo "$L2_ENGINE_JWT" > /tmp/engine.jwt
 
 exec ./geth \
-  --datadir=/data \
+  --datadir="$GETH_DATA_DIR" \
   --http \
   --http.corsdomain="*" \
   --http.vhosts="*" \

@@ -1,13 +1,24 @@
 services:
-  op-geth:
+#  op-geth:
+#    build:
+#      context: ..
+#      dockerfile: testnet/Dockerfile
+#    ports:
+#      - "8545:8545"
+#    command: [ "bash", "./entrypoint-geth.sh" ]
+#    volumes:
+#      - ./data/geth:/data
+#    env_file:
+#      - .env
+  op-reth:
     build:
       context: ..
       dockerfile: testnet/Dockerfile
     ports:
       - "8545:8545"
-    command: [ "bash", "./entrypoint-geth.sh" ]
+    command: [ "bash", "./entrypoint-reth.sh" ]
     volumes:
-      - ./data/geth:/data
+      - ./data/reth:/data
     env_file:
       - .env
   op-node:
@@ -15,7 +26,7 @@ services:
       context: ..
       dockerfile: testnet/Dockerfile
     depends_on:
-      - op-geth
+      - op-reth
       - op-da
     ports:
       - "7545:8545"
@@ -36,7 +47,7 @@ services:
       context: ..
       dockerfile: testnet/Dockerfile
     depends_on:
-      - op-geth
+      - op-reth
       - op-node
     command: [ "bash", "./entrypoint-batcher.sh" ]
     env_file:
@@ -46,7 +57,7 @@ services:
       context: ..
       dockerfile: testnet/Dockerfile
     depends_on:
-      - op-geth
+      - op-reth
       - op-node
     command: [ "bash", "./entrypoint-proposer.sh" ]
     env_file:

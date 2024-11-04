@@ -87,4 +87,5 @@ COPY testnet/entrypoint-enclave.sh ./
 COPY testnet/entrypoint-geth.sh ./
 COPY testnet/entrypoint-node.sh ./
 COPY testnet/entrypoint-proposer.sh ./
+COPY testnet/entrypoint-reth.sh ./
 COPY deployments/ deployments/
