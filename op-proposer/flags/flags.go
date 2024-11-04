@@ -17,6 +17,13 @@ var (
 		EnvVars:  prefixEnvVar("L2_ETH_RPC"),
 		Required: true,
 	}
+	L2RethFlag = &cli.BoolFlag{
+		Name:     "l2-reth",
+		Usage:    "Is the L2 HTTP provider running Reth?",
+		EnvVars:  prefixEnvVar("L2_RETH"),
+		Value:    false,
+		Required: false,
+	}
 	EnclaveRpcFlag = &cli.StringFlag{
 		Name:     "enclave-rpc",
 		Usage:    "HTTP provider URL for the enclave service",
@@ -33,6 +40,7 @@ var (
 
 var requiredFlags = []cli.Flag{
 	L2EthRpcFlag,
+	L2RethFlag,
 	EnclaveRpcFlag,
 	MinProposalIntervalFlag,
 }

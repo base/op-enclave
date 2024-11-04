@@ -57,6 +57,7 @@ type ProposerService struct {
 	TxManager     txmgr.TxManager
 	L1Client      *ethclient.Client
 	L2Client      *ethclient.Client
+	L2Reth        bool
 	RollupClient  *gethrpc.Client
 	EnclaveClient *gethrpc.Client
 
@@ -135,6 +136,7 @@ func (ps *ProposerService) initRPCClients(ctx context.Context, cfg *CLIConfig) e
 		return fmt.Errorf("failed to dial L2 RPC: %w", err)
 	}
 	ps.L2Client = l2Client
+	ps.L2Reth = cfg.L2Reth
 
 	rollupClient, err := dial.DialRPCClientWithTimeout(ctx, dial.DefaultDialTimeout, ps.Log, cfg.RollupRpc)
 	if err != nil {
@@ -214,13 +216,19 @@ func (ps *ProposerService) initL2ooAddress(cfg *CLIConfig) {
 }
 
 func (ps *ProposerService) initDriver() error {
+	var l2Client L2Client
+	if ps.L2Reth {
+		l2Client = NewRethClient(ps.L2Client, ps.Metrics.L2Cache)
+	} else {
+		l2Client = NewClient(ps.L2Client, ps.Metrics.L2Cache)
+	}
 	driver, err := NewL2OutputSubmitter(DriverSetup{
 		Log:           ps.Log,
 		Metr:          ps.Metrics,
 		Cfg:           ps.ProposerConfig,
 		Txmgr:         ps.TxManager,
 		L1Client:      NewClient(ps.L1Client, ps.Metrics.L1Cache),
-		L2Client:      NewClient(ps.L2Client, ps.Metrics.L2Cache),
+		L2Client:      l2Client,
 		RollupClient:  NewRollupClient(ps.RollupClient, ps.Metrics.WitnessCache),
 		EnclaveClient: &enclave.Client{Client: ps.EnclaveClient},
 	})
