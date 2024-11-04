@@ -20,6 +20,8 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
+const aggregateBatchSize = 1000
+
 var (
 	ErrProposerNotRunning = errors.New("proposer is not running")
 )
@@ -295,16 +297,19 @@ func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput binding
 	}
 	l.pending = l.pending[len(proposals):]
 
-	proposal := proposals[0]
-	if len(proposals) > 1 {
-		proposal, err = l.prover.Aggregate(ctx, latestOutput.OutputRoot, proposals)
+	for len(proposals) > 1 {
+		batchLength := min(len(proposals), aggregateBatchSize)
+		batch := proposals[:batchLength]
+		aggregated, err := l.prover.Aggregate(ctx, latestOutput.OutputRoot, batch)
 		if err != nil {
 			return nil, false, fmt.Errorf("failed to aggregate proofs: %w", err)
 		}
 		l.Log.Info("Aggregated proofs",
-			"output", proposal.Output.OutputRoot.String(), "blocks", len(proposals),
-			"withdrawals", proposal.Withdrawals, "from", proposal.From.Number, "to", proposal.To.Number)
+			"output", aggregated.Output.OutputRoot.String(), "blocks", batchLength, "remaining", len(proposals),
+			"withdrawals", aggregated.Withdrawals, "from", aggregated.From.Number, "to", aggregated.To.Number)
+		proposals = append([]*Proposal{aggregated}, proposals[batchLength:]...)
 	}
+	proposal := proposals[0]
 	l.pending = append([]*Proposal{proposal}, l.pending...)
 
 	if proposal.To.Hash != latestSafe.Hash {
