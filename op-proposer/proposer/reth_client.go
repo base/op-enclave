@@ -55,7 +55,8 @@ func (e *rethClient) ExecutionWitness(ctx context.Context, hash common.Hash) ([]
 
 	// reth doesn't return required headers (for BLOCKHASH), so eagerly populate them all:
 	parentHash := header.ParentHash
-	for i := 0; i < 256; i++ {
+	history := int(min(256, header.Number.Uint64()))
+	for i := 0; i < history; i++ {
 		parent, err := e.HeaderByHash(ctx, parentHash)
 		if err != nil {
 			return nil, err
