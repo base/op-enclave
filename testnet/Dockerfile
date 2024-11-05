@@ -65,7 +65,7 @@ RUN git clone $REPO --branch $VERSION --single-branch . && \
     git switch -c branch-$VERSION && \
     bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
 
-RUN cargo build --bin op-reth --features jemalloc,asm-keccak,optimism --profile maxperf --manifest-path crates/optimism/bin/Cargo.toml
+RUN cargo build --bin op-reth --features jemalloc,asm-keccak,optimism --manifest-path crates/optimism/bin/Cargo.toml
 
 
 FROM ubuntu:22.04
@@ -76,7 +76,7 @@ WORKDIR /app
 
 COPY --from=op-node /app/op-node/bin/op-node ./
 COPY --from=op-geth /app/build/bin/geth ./
-COPY --from=op-reth /app/target/maxperf/op-reth ./reth
+COPY --from=op-reth /app/target/debug/op-reth ./reth
 COPY --from=op-enclave /app/bin/op-enclave ./
 COPY --from=op-enclave /app/bin/op-batcher ./
 COPY --from=op-enclave /app/bin/op-proposer ./
