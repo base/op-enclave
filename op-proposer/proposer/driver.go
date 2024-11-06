@@ -316,7 +316,7 @@ func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput binding
 		l.pending = append([]*Proposal{aggregated}, l.pending[batchLength:]...)
 		count -= batchLength - 1
 		l.Log.Info("Aggregated proofs",
-			"output", aggregated.Output.OutputRoot.String(), "blocks", batchLength, "remaining", count,
+			"output", aggregated.Output.OutputRoot.String(), "blocks", batchLength, "remaining", count-1,
 			"withdrawals", aggregated.Withdrawals, "from", aggregated.From.Number, "to", aggregated.To.Number)
 	}
 	proposal := l.pending[0]
