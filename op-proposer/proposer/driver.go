@@ -258,18 +258,20 @@ func (l *L2OutputSubmitter) generateOutputs(ctx context.Context, latestOutput bi
 		}
 	}
 
-	for i := latestOutputNumber + 1; ; i++ {
-		block, err := l.L2Client.BlockByNumber(ctx, new(big.Int).SetUint64(i))
+	// calculate `aggregateBatchSize` proofs at once, which are then aggregated in `nextOutput`
+	for i := uint64(0); i < aggregateBatchSize; i++ {
+		number := i + latestOutputNumber + 1
+		block, err := l.L2Client.BlockByNumber(ctx, new(big.Int).SetUint64(number))
 		if errors.Is(err, ethereum.NotFound) {
-			return nil
+			break
 		}
 		if err != nil {
-			return fmt.Errorf("failed to get block %d: %w", i, err)
+			return fmt.Errorf("failed to get block %d: %w", number, err)
 		}
 
 		proposal, err := l.prover.Generate(ctx, block)
 		if err != nil {
-			return fmt.Errorf("failed to generate proof for block %d: %w", i, err)
+			return fmt.Errorf("failed to generate proof for block %d: %w", number, err)
 		}
 
 		l.Log.Info("Generated proof for block",
@@ -277,6 +279,8 @@ func (l *L2OutputSubmitter) generateOutputs(ctx context.Context, latestOutput bi
 			"withdrawals", proposal.Withdrawals, "output", proposal.Output.OutputRoot.String())
 		l.pending = append(l.pending, proposal)
 	}
+
+	return nil
 }
 
 func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput bindings.TypesOutputProposal) (*Proposal, bool, error) {
