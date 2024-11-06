@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const aggregateBatchSize = 1000
@@ -285,32 +286,36 @@ func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput binding
 		return nil, false, err
 	}
 
-	var proposals []*Proposal
-	for _, proposal := range l.pending {
-		if proposal.To.Number > latestSafe.Number {
+	count := 0
+	for ; count < len(l.pending); count++ {
+		if l.pending[count].To.Number > latestSafe.Number {
 			break
 		}
-		proposals = append(proposals, proposal)
 	}
-	if len(proposals) == 0 {
+	if count == 0 {
 		return nil, false, nil
 	}
-	l.pending = l.pending[len(proposals):]
 
-	for len(proposals) > 1 {
-		batchLength := min(len(proposals), aggregateBatchSize)
-		batch := proposals[:batchLength]
+	for count > 1 {
+		batchLength := min(count, aggregateBatchSize)
+		batch := l.pending[:batchLength]
 		aggregated, err := l.prover.Aggregate(ctx, latestOutput.OutputRoot, batch)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to aggregate proofs: %w", err)
+			var rpcError rpc.Error
+			if errors.As(err, &rpcError) {
+				// if we received an explicit error from the enclave (like "invalid signer"), clear the pending proofs
+				l.Log.Warn("Non-recoverable error aggregating proofs", "err", err)
+				l.pending = nil
+			}
+			return nil, false, err
 		}
+		l.pending = append([]*Proposal{aggregated}, l.pending[batchLength:]...)
+		count -= batchLength - 1
 		l.Log.Info("Aggregated proofs",
-			"output", aggregated.Output.OutputRoot.String(), "blocks", batchLength, "remaining", len(proposals),
+			"output", aggregated.Output.OutputRoot.String(), "blocks", batchLength, "remaining", count,
 			"withdrawals", aggregated.Withdrawals, "from", aggregated.From.Number, "to", aggregated.To.Number)
-		proposals = append([]*Proposal{aggregated}, proposals[batchLength:]...)
 	}
-	proposal := proposals[0]
-	l.pending = append([]*Proposal{proposal}, l.pending...)
+	proposal := l.pending[0]
 
 	if proposal.To.Hash != latestSafe.Hash {
 		l.Log.Warn("Aggregated output does not match the latest batched block, possible reorg",
