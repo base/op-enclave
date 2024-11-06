@@ -291,12 +291,10 @@ func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput binding
 	}
 
 	count := 0
-	for ; count < len(l.pending); count++ {
-		if l.pending[count].To.Number > latestSafe.Number {
-			break
-		}
+	for count < len(l.pending) && l.pending[count].To.Number < latestSafe.Number {
+		count++
 	}
-	if count == 0 {
+	if count <= 0 {
 		return nil, false, nil
 	}
 
