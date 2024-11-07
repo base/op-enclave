@@ -27,6 +27,12 @@ var (
 	ErrProposerNotRunning = errors.New("proposer is not running")
 )
 
+func init() {
+	if aggregateBatchSize <= 1 {
+		panic("aggregateBatchSize must be greater than 1")
+	}
+}
+
 type OOContract interface {
 	Version(*bind.CallOpts) (string, error)
 	LatestL2Output(opts *bind.CallOpts) (bindings.TypesOutputProposal, error)
@@ -318,6 +324,12 @@ func (l *L2OutputSubmitter) nextOutput(ctx context.Context, latestOutput binding
 			"withdrawals", aggregated.Withdrawals, "from", aggregated.From.Number, "to", aggregated.To.Number)
 	}
 	proposal := l.pending[0]
+
+	if proposal.To.Number < latestSafe.Number {
+		l.Log.Info("Aggregated output is not the latest safe block, waiting for more proofs",
+			"aggregated", l2BlockRefToBlockID(proposal.To), "latestSafe", latestSafe)
+		return nil, false, nil
+	}
 
 	if proposal.To.Hash != latestSafe.Hash {
 		l.Log.Warn("Aggregated output does not match the latest batched block, possible reorg",
