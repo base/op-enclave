@@ -144,6 +144,7 @@ contract DeploySystem is Deploy {
     function deploySystemConfigOwnable() public broadcast returns (address addr_) {
         console.log("Deploying OwnerConfig");
         OwnerConfig ownerConfig = new OwnerConfig{salt: _implSalt()}(cfg.finalSystemOwner());
+        save("OwnerConfig", address(ownerConfig));
 
         console.log("Deploying SystemConfig implementation");
         addr_ = address(new SystemConfigOwnable{salt: _implSalt()}(ownerConfig));
