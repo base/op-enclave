@@ -167,6 +167,8 @@ contract DeployChain {
         DeployAddresses memory addresses
     ) internal view returns (Hashes memory) {
         bytes32 genesisL1Hash = blockhash(uint256(genesisConfig.l1Number));
+        require(genesisL1Hash != bytes32(0), "DeployChain: genesis blockhash not available");
+
         bytes32 scalar =
             bytes32((uint256(0x01) << 248) | (uint256(gasConfig.blobbasefeeScalar) << 32) | gasConfig.basefeeScalar);
 
