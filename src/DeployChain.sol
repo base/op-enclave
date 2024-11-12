@@ -31,11 +31,24 @@ contract DeployChain {
         address optimismMintableERC20Factory;
     }
 
+    struct GenesisConfiguration {
+        uint64 l1Number;
+        bytes32 l2Hash;
+        bytes32 l2StateRoot;
+        uint64 l2Time;
+    }
+
     struct GasConfiguration {
         uint32 basefeeScalar;
         uint32 blobbasefeeScalar;
         uint64 gasLimit;
         address gasToken;
+    }
+
+    struct AddressConfiguration {
+        address batcher;
+        address proposer;
+        address unsafeBlockSigner;
     }
 
     struct Hashes {
@@ -100,32 +113,17 @@ contract DeployChain {
 
     function deploy(
         uint256 chainID,
-        uint64 genesisL1Number,
-        bytes32 genesisL2Hash,
-        bytes32 genesisL2StateRoot,
-        uint64 genesisL2Time,
+        GenesisConfiguration memory genesisConfig,
         GasConfiguration memory gasConfig,
-        address batcherAddress,
-        address unsafeBlockSigner,
-        address proposer
+        AddressConfiguration memory addressConfig
     ) external {
         DeployAddresses memory addresses = setupProxies(chainID);
-        bytes32 genesisL1Hash = blockhash(uint256(genesisL1Number));
 
-        Hashes memory hashes = calculateHashes(
-            chainID,
-            genesisL1Hash,
-            genesisL2Hash,
-            genesisL2StateRoot,
-            genesisL2Time,
-            gasConfig,
-            batcherAddress,
-            addresses
-        );
+        Hashes memory hashes = calculateHashes(chainID, genesisConfig, gasConfig, addressConfig.batcher, addresses);
 
         address batchInbox = calculateBatchInbox(chainID);
 
-        initializeProxies(gasConfig, batcherAddress, unsafeBlockSigner, batchInbox, proposer, hashes, addresses);
+        initializeProxies(gasConfig, addressConfig, batchInbox, hashes, addresses);
 
         emit Deploy({
             chainID: chainID,
@@ -163,14 +161,12 @@ contract DeployChain {
 
     function calculateHashes(
         uint256 chainID,
-        bytes32 genesisL1Hash,
-        bytes32 genesisL2Hash,
-        bytes32 genesisL2StateRoot,
-        uint64 genesisL2Time,
+        GenesisConfiguration memory genesisConfig,
         GasConfiguration memory gasConfig,
         address batcherAddress,
         DeployAddresses memory addresses
-    ) internal pure returns (Hashes memory) {
+    ) internal view returns (Hashes memory) {
+        bytes32 genesisL1Hash = blockhash(uint256(genesisConfig.l1Number));
         bytes32 scalar =
             bytes32((uint256(0x01) << 248) | (uint256(gasConfig.blobbasefeeScalar) << 32) | gasConfig.basefeeScalar);
 
@@ -179,8 +175,8 @@ contract DeployChain {
                 uint64(0), // version
                 chainID,
                 genesisL1Hash,
-                genesisL2Hash,
-                genesisL2Time,
+                genesisConfig.l2Hash,
+                genesisConfig.l2Time,
                 batcherAddress,
                 scalar,
                 gasConfig.gasLimit,
@@ -192,9 +188,9 @@ contract DeployChain {
         bytes32 genesisOutputRoot = Hashing.hashOutputRootProof(
             Types.OutputRootProof({
                 version: 0,
-                stateRoot: genesisL2StateRoot,
+                stateRoot: genesisConfig.l2StateRoot,
                 messagePasserStorageRoot: MESSAGE_PASSER_STORAGE_HASH,
-                latestBlockhash: genesisL2Hash
+                latestBlockhash: genesisConfig.l2Hash
             })
         );
 
@@ -203,19 +199,11 @@ contract DeployChain {
 
     function initializeProxies(
         GasConfiguration memory gasConfig,
-        address batcherAddress,
-        address unsafeBlockSigner,
+        AddressConfiguration memory addressConfig,
         address batchInbox,
-        address proposer,
         Hashes memory hashes,
         DeployAddresses memory addresses
     ) internal {
-        _initializeOracles(addresses, hashes);
-        _initializeSystemConfig(addresses, gasConfig, batcherAddress, unsafeBlockSigner, batchInbox, proposer);
-        _initializeBridges(addresses);
-    }
-
-    function _initializeOracles(DeployAddresses memory addresses, Hashes memory hashes) private {
         OutputOracle(addresses.l2OutputOracle).initialize(
             SystemConfigOwnable(addresses.systemConfig), hashes.configHash, hashes.genesisOutputRoot
         );
@@ -225,48 +213,21 @@ contract DeployChain {
             ISystemConfig(addresses.systemConfig),
             ISuperchainConfig(superchainConfig)
         );
-    }
 
-    function _initializeSystemConfig(
-        DeployAddresses memory addresses,
-        GasConfiguration memory gasConfig,
-        address batcherAddress,
-        address unsafeBlockSigner,
-        address batchInbox,
-        address proposer
-    ) private {
         SystemConfig.Addresses memory systemAddresses = _createSystemAddresses(addresses, gasConfig.gasToken);
 
         SystemConfigOwnable(addresses.systemConfig).initialize({
             _basefeeScalar: gasConfig.basefeeScalar,
             _blobbasefeeScalar: gasConfig.blobbasefeeScalar,
-            _batcherHash: bytes32(uint256(uint160(batcherAddress))),
+            _batcherHash: bytes32(uint256(uint160(addressConfig.batcher))),
             _gasLimit: gasConfig.gasLimit,
-            _unsafeBlockSigner: unsafeBlockSigner,
+            _unsafeBlockSigner: addressConfig.unsafeBlockSigner,
             _config: Constants.DEFAULT_RESOURCE_CONFIG(),
             _batchInbox: batchInbox,
-            _proposer: proposer,
+            _proposer: addressConfig.proposer,
             _addresses: systemAddresses
         });
-    }
 
-    function _createSystemAddresses(DeployAddresses memory addresses, address gasToken)
-        private
-        pure
-        returns (SystemConfig.Addresses memory)
-    {
-        return SystemConfig.Addresses({
-            l1CrossDomainMessenger: addresses.l1CrossDomainMessenger,
-            l1ERC721Bridge: addresses.l1ERC721Bridge,
-            l1StandardBridge: addresses.l1StandardBridge,
-            disputeGameFactory: address(0),
-            optimismPortal: addresses.optimismPortal,
-            optimismMintableERC20Factory: addresses.optimismMintableERC20Factory,
-            gasPayingToken: gasToken
-        });
-    }
-
-    function _initializeBridges(DeployAddresses memory addresses) private {
         L1CrossDomainMessenger(addresses.l1CrossDomainMessenger).initialize(
             ISuperchainConfig(superchainConfig),
             IOptimismPortal(payable(addresses.optimismPortal)),
@@ -284,6 +245,22 @@ contract DeployChain {
         );
 
         OptimismMintableERC20Factory(addresses.optimismMintableERC20Factory).initialize(addresses.l1StandardBridge);
+    }
+
+    function _createSystemAddresses(DeployAddresses memory addresses, address gasToken)
+        private
+        pure
+        returns (SystemConfig.Addresses memory)
+    {
+        return SystemConfig.Addresses({
+            l1CrossDomainMessenger: addresses.l1CrossDomainMessenger,
+            l1ERC721Bridge: addresses.l1ERC721Bridge,
+            l1StandardBridge: addresses.l1StandardBridge,
+            disputeGameFactory: address(0),
+            optimismPortal: addresses.optimismPortal,
+            optimismMintableERC20Factory: addresses.optimismMintableERC20Factory,
+            gasPayingToken: gasToken
+        });
     }
 
     function setupProxy(address proxy, bytes32 salt) internal returns (address instance) {

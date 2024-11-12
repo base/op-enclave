@@ -398,24 +398,30 @@ func Main(cliCtx *cli.Context) error {
 		},
 	}
 
+	genesisCfg := bindings.DeployChainGenesisConfiguration{
+		L1Number:    l1Header.Number.Uint64(),
+		L2Hash:      genesisBlock.Hash(),
+		L2StateRoot: genesisBlock.Root(),
+		L2Time:      l2Genesis.Timestamp,
+	}
 	gasConfig := bindings.DeployChainGasConfiguration{
 		BasefeeScalar:     config.GasPriceOracleBaseFeeScalar,
 		BlobbasefeeScalar: config.GasPriceOracleBlobBaseFeeScalar,
 		GasLimit:          uint64(config.L2GenesisBlockGasLimit),
 		GasToken:          config.CustomGasTokenAddress,
 	}
+	addressConfig := bindings.DeployChainAddressConfiguration{
+		Batcher:           config.BatchSenderAddress,
+		Proposer:          config.L2OutputOracleProposer,
+		UnsafeBlockSigner: config.P2PSequencerAddress,
+	}
 
 	tx, err := deployChain.Deploy(
 		opts,
 		l2ChainID,
-		l1Header.Number.Uint64(),
-		genesisBlock.Hash(),
-		genesisBlock.Root(),
-		l2Genesis.Timestamp,
+		genesisCfg,
 		gasConfig,
-		config.BatchSenderAddress,
-		config.P2PSequencerAddress,
-		config.L2OutputOracleProposer,
+		addressConfig,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to deploy proxies: %w", err)
