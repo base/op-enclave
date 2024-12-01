@@ -21,7 +21,7 @@ import {DeployChain} from "src/DeployChain.sol";
 import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
 import {ResourceMetering} from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
 import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
-import "../src/INitroValidator.sol";
+import {CertManager} from "@nitro-validator/CertManager.sol";
 
 import {console2 as console} from "forge-std/console2.sol";
 
@@ -49,7 +49,7 @@ contract DeploySystem is Deploy {
     function setupSystemConfigGlobal() public {
         console.log("Setting up SystemConfigGlobal");
 
-        checkNitroValidator();
+        checkCertManager();
 
         deployERC1967Proxy("SystemConfigGlobalProxy");
         deploySystemConfigGlobal();
@@ -119,26 +119,22 @@ contract DeploySystem is Deploy {
         initializeOutputOracle();
     }
 
-    function checkNitroValidator() public {
-        console.log("Retrieving NitroValidator deploy");
+    function checkCertManager() public {
+        console.log("Retrieving CertManager deploy");
         string memory deploymentOutfile =
-            string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-validator.json");
-        address nitroValidatorAddress = vm.parseJsonAddress(vm.readFile(deploymentOutfile), ".NitroValidator");
-        save("NitroValidator", nitroValidatorAddress);
+            string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), "-certmanager.json");
+        address certManagerAddress = vm.parseJsonAddress(vm.readFile(deploymentOutfile), ".CertManager");
+        save("CertManager", certManagerAddress);
 
-        INitroValidator validator = INitroValidator(nitroValidatorAddress);
-        bytes memory attestation =
-            vm.readFileBinary(string.concat(vm.projectRoot(), "/test/nitro-attestation/sample_attestation.bin"));
+        bytes memory parent =
+            hex"3082021130820196a003020102021100f93175681b90afe11d46ccb4e4e7f856300a06082a8648ce3d0403033049310b3009060355040613025553310f300d060355040a0c06416d617a6f6e310c300a060355040b0c03415753311b301906035504030c126177732e6e6974726f2d656e636c61766573301e170d3139313032383133323830355a170d3439313032383134323830355a3049310b3009060355040613025553310f300d060355040a0c06416d617a6f6e310c300a060355040b0c03415753311b301906035504030c126177732e6e6974726f2d656e636c617665733076301006072a8648ce3d020106052b8104002203620004fc0254eba608c1f36870e29ada90be46383292736e894bfff672d989444b5051e534a4b1f6dbe3c0bc581a32b7b176070ede12d69a3fea211b66e752cf7dd1dd095f6f1370f4170843d9dc100121e4cf63012809664487c9796284304dc53ff4a3423040300f0603551d130101ff040530030101ff301d0603551d0e041604149025b50dd90547e796c396fa729dcf99a9df4b96300e0603551d0f0101ff040403020186300a06082a8648ce3d0403030369003066023100a37f2f91a1c9bd5ee7b8627c1698d255038e1f0343f95b63a9628c3d39809545a11ebcbf2e3b55d8aeee71b4c3d6adf3023100a2f39b1605b27028a5dd4ba069b5016e65b4fbde8fe0061d6a53197f9cdaf5d943bc61fc2beb03cb6fee8d2302f3dff6";
+        bytes memory cert =
+            hex"308202bf30820244a00302010202100b93e39c65609c59e8144a2ad34ba3a0300a06082a8648ce3d0403033049310b3009060355040613025553310f300d060355040a0c06416d617a6f6e310c300a060355040b0c03415753311b301906035504030c126177732e6e6974726f2d656e636c61766573301e170d3234313132333036333235355a170d3234313231333037333235355a3064310b3009060355040613025553310f300d060355040a0c06416d617a6f6e310c300a060355040b0c034157533136303406035504030c2d353133623665666332313639303264372e75732d656173742d312e6177732e6e6974726f2d656e636c617665733076301006072a8648ce3d020106052b8104002203620004ee78108039725a03e0b63a5d7d1244f6294eb7631f305e360997c8e5c06c779f23cfaeb64cb9aeac8a031bfac9f4dafc3621b4367f003c08c0ce410c2118396cc5d56ec4e92e1b17f9709b2bffcef462f7bcb97d6ca11325c4a30156c9720de7a381d53081d230120603551d130101ff040830060101ff020102301f0603551d230418301680149025b50dd90547e796c396fa729dcf99a9df4b96301d0603551d0e041604142b3d75d274a3cdd61b2c13f539e08c960ce757dd300e0603551d0f0101ff040403020186306c0603551d1f046530633061a05fa05d865b687474703a2f2f6177732d6e6974726f2d656e636c617665732d63726c2e73332e616d617a6f6e6177732e636f6d2f63726c2f61623439363063632d376436332d343262642d396539662d3539333338636236376638342e63726c300a06082a8648ce3d0403030369003066023100fce7a6c2b38e0a8ebf0d28348d74463458b84bfe8b2b95315dd4da665e8e83d4ab911852a4e92a8263ecf571d2df3b89023100ab92be511136be76aa313018f9f4825eaad602d0342d268e6da632767f68f55f761fa9fd2a7ee716c481c67f26e3f8f4";
 
         uint256 timestamp = vm.getBlockTimestamp();
-        vm.warp(1708930774);
-        (bytes memory enclavePubKey, bytes memory pcr0) = validator.validateAttestation(attestation, 365 days);
+        vm.warp(1732580000);
+        CertManager(certManagerAddress).verifyCert(cert, false, keccak256(parent));
         vm.warp(timestamp);
-
-        vm.assertEq(enclavePubKey, hex"d239fd059dd0e0a01e280bec44903bb8143bae7e578b9844c6df5fd6351eddc0");
-        vm.assertEq(
-            pcr0, hex"17BF8F048519797BE90497001A7559A3D555395937117D76F8BAAEDF56CA6D97952DE79479BC0C76E5D176D20F663790"
-        );
     }
 
     function deploySystemConfigOwnable() public broadcast returns (address addr_) {
@@ -161,7 +157,7 @@ contract DeploySystem is Deploy {
 
     function deploySystemConfigGlobal() public broadcast returns (address addr_) {
         console.log("Deploying SystemConfigGlobal implementation");
-        addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(INitroValidator(mustGetAddress("NitroValidator"))));
+        addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(CertManager(mustGetAddress("CertManager"))));
         save("SystemConfigGlobal", addr_);
         console.log("SystemConfigGlobal deployed at %s", addr_);
     }

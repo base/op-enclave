@@ -11,5 +11,4 @@ src/libraries/=lib/optimism/packages/contracts-bedrock/src/libraries/
 src/universal/=lib/optimism/packages/contracts-bedrock/src/universal/
 src/vendor/=lib/optimism/packages/contracts-bedrock/src/vendor/
 scripts/=lib/optimism/packages/contracts-bedrock/scripts/
-@marlinprotocol/=lib/NitroProver/src/
-@solidity-cbor/=lib/NitroProver/lib/solidity-cbor/packages/solidity-cbor/contracts/
+@nitro-validator/=lib/nitro-validator/src/

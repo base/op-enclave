@@ -4,6 +4,6 @@
 [submodule "lib/optimism"]
 	path = lib/optimism
 	url = https://github.com/ethereum-optimism/optimism
-[submodule "lib/NitroProver"]
-	path = lib/NitroProver
-	url = https://github.com/mdehoog/NitroProver
+[submodule "lib/nitro-validator"]
+	path = lib/nitro-validator
+	url = https://github.com/mdehoog/nitro-validator

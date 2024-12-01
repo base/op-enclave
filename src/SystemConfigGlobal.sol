@@ -4,11 +4,16 @@ pragma solidity ^0.8.0;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
-import "./INitroValidator.sol";
+import {NitroValidator} from "@nitro-validator/NitroValidator.sol";
+import {CertManager} from "@nitro-validator/CertManager.sol";
+import {NodePtr, LibNodePtr} from "@nitro-validator/NodePtr.sol";
+import {LibBytes} from "@nitro-validator/LibBytes.sol";
 
-contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
-    /// @notice The AWS Nitro validator.
-    INitroValidator public immutable nitroValidator;
+contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
+    using LibNodePtr for NodePtr;
+    using LibBytes for bytes;
+
+    uint256 public constant MAX_AGE = 60 minutes;
 
     /// @notice The address of the proposer.
     address public proposer;
@@ -25,8 +30,7 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
         return "0.0.1";
     }
 
-    constructor(INitroValidator _nitroValidator) {
-        nitroValidator = _nitroValidator;
+    constructor(CertManager certManager) NitroValidator(certManager) {
         initialize({_owner: address(0xdEaD)});
     }
 
@@ -47,11 +51,15 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver {
         delete validPCR0s[keccak256(pcr0)];
     }
 
-    function registerSigner(bytes calldata attestation) external onlyOwner {
-        (bytes memory enclavePublicKey, bytes memory pcr0) = nitroValidator.validateAttestation(attestation, 10 minutes);
+    function registerSigner(bytes calldata attestationTbs, bytes calldata signature) external onlyOwner {
+        Ptrs memory ptrs = validateAttestation(attestationTbs, signature);
+        bytes memory pcr0 = attestationTbs.slice(ptrs.pcrs[0].content(), ptrs.pcrs[0].length());
         require(validPCR0s[keccak256(pcr0)], "invalid pcr0 in attestation");
 
-        address enclaveAddress = address(uint160(uint256(keccak256(enclavePublicKey))));
+        require(ptrs.timestamp + MAX_AGE > block.timestamp, "attestation too old");
+
+        bytes memory publicKey = attestationTbs.slice(ptrs.publicKey.content(), ptrs.publicKey.length());
+        address enclaveAddress = address(uint160(uint256(keccak256(publicKey))));
         validSigners[enclaveAddress] = true;
     }
 
