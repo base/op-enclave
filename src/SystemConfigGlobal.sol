@@ -5,13 +5,11 @@ pragma solidity ^0.8.0;
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 import {NitroValidator} from "@nitro-validator/NitroValidator.sol";
+import {CborDecode} from "@nitro-validator/CborDecode.sol";
 import {CertManager} from "@nitro-validator/CertManager.sol";
-import {NodePtr, LibNodePtr} from "@nitro-validator/NodePtr.sol";
-import {LibBytes} from "@nitro-validator/LibBytes.sol";
 
 contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
-    using LibNodePtr for NodePtr;
-    using LibBytes for bytes;
+    using CborDecode for bytes;
 
     uint256 public constant MAX_AGE = 60 minutes;
 
@@ -53,12 +51,12 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
 
     function registerSigner(bytes calldata attestationTbs, bytes calldata signature) external onlyOwner {
         Ptrs memory ptrs = validateAttestation(attestationTbs, signature);
-        bytes memory pcr0 = attestationTbs.slice(ptrs.pcrs[0].content(), ptrs.pcrs[0].length());
-        require(validPCR0s[keccak256(pcr0)], "invalid pcr0 in attestation");
+        bytes32 pcr0 = attestationTbs.keccak(ptrs.pcrs[0]);
+        require(validPCR0s[pcr0], "invalid pcr0 in attestation");
 
         require(ptrs.timestamp + MAX_AGE > block.timestamp, "attestation too old");
 
-        bytes memory publicKey = attestationTbs.slice(ptrs.publicKey.content(), ptrs.publicKey.length());
+        bytes memory publicKey = attestationTbs.slice(ptrs.publicKey);
         address enclaveAddress = address(uint160(uint256(keccak256(publicKey))));
         validSigners[enclaveAddress] = true;
     }
