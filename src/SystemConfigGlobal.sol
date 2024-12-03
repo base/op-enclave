@@ -6,7 +6,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 import {NitroValidator} from "@nitro-validator/NitroValidator.sol";
 import {CborDecode} from "@nitro-validator/CborDecode.sol";
-import {CertManager} from "@nitro-validator/CertManager.sol";
+import {ICertManager} from "@nitro-validator/ICertManager.sol";
 
 contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
     using CborDecode for bytes;
@@ -28,7 +28,7 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
         return "0.0.1";
     }
 
-    constructor(CertManager certManager) NitroValidator(certManager) {
+    constructor(ICertManager certManager) NitroValidator(certManager) {
         initialize({_owner: address(0xdEaD)});
     }
 

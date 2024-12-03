@@ -21,7 +21,7 @@ import {DeployChain} from "src/DeployChain.sol";
 import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
 import {ResourceMetering} from "@eth-optimism-bedrock/src/L1/ResourceMetering.sol";
 import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResourceMetering.sol";
-import {CertManager} from "@nitro-validator/CertManager.sol";
+import {ICertManager} from "@nitro-validator/ICertManager.sol";
 
 import {console2 as console} from "forge-std/console2.sol";
 
@@ -133,7 +133,7 @@ contract DeploySystem is Deploy {
 
         uint256 timestamp = vm.getBlockTimestamp();
         vm.warp(1732580000);
-        CertManager(certManagerAddress).verifyCert(cert, false, keccak256(parent));
+        ICertManager(certManagerAddress).verifyCert(cert, false, keccak256(parent));
         vm.warp(timestamp);
     }
 
@@ -157,7 +157,7 @@ contract DeploySystem is Deploy {
 
     function deploySystemConfigGlobal() public broadcast returns (address addr_) {
         console.log("Deploying SystemConfigGlobal implementation");
-        addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(CertManager(mustGetAddress("CertManager"))));
+        addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(ICertManager(mustGetAddress("CertManager"))));
         save("SystemConfigGlobal", addr_);
         console.log("SystemConfigGlobal deployed at %s", addr_);
     }

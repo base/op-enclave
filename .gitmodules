@@ -6,4 +6,4 @@
 	url = https://github.com/ethereum-optimism/optimism
 [submodule "lib/nitro-validator"]
 	path = lib/nitro-validator
-	url = https://github.com/mdehoog/nitro-validator
+	url = https://github.com/base-org/nitro-validator
