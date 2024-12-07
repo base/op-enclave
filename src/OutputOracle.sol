@@ -192,7 +192,7 @@ contract OutputOracle is Initializable, ISemver {
         return l2Outputs.length == 0 ? 0 : l2Outputs[latestOutputIndex].l2BlockNumber;
     }
 
-    /// @notice Returns the the latest submitted L2 output proposal.
+    /// @notice Returns the latest submitted L2 output proposal.
     /// @return Latest submitted L2 output proposal.
     function latestL2Output() public view returns (Types.OutputProposal memory) {
         return l2Outputs[latestOutputIndex];
