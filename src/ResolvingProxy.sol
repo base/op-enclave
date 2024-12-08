@@ -52,26 +52,26 @@ contract ResolvingProxy {
 
     /// @notice Gets the owner of the proxy contract.
     /// @return Owner address.
-    function admin() public virtual proxyCallIfNotAdmin returns (address) {
+    function admin() external virtual proxyCallIfNotAdmin returns (address) {
         return _getAdmin();
     }
 
     /// @notice Changes the owner of the proxy contract. Only callable by the owner.
     /// @param _admin New owner of the proxy contract.
-    function changeAdmin(address _admin) public virtual proxyCallIfNotAdmin {
+    function changeAdmin(address _admin) external virtual proxyCallIfNotAdmin {
         _setAdmin(_admin);
     }
 
     //// @notice Queries the implementation address.
     /// @return Implementation address.
-    function implementation() public virtual proxyCallIfNotAdmin returns (address) {
+    function implementation() external virtual proxyCallIfNotAdmin returns (address) {
         return _getImplementation();
     }
 
     /// @notice Set the implementation contract address. The code at the given address will execute
     ///         when this contract is called.
     /// @param _implementation Address of the implementation contract.
-    function upgradeTo(address _implementation) public virtual proxyCallIfNotAdmin {
+    function upgradeTo(address _implementation) external virtual proxyCallIfNotAdmin {
         _setImplementation(_implementation);
     }
 
@@ -80,21 +80,16 @@ contract ResolvingProxy {
     /// @param _implementation Address of the implementation contract.
     /// @param _data           Calldata to delegatecall the new implementation with.
     function upgradeToAndCall(address _implementation, bytes calldata _data)
-        public
+        external
         payable
-        virtual
         proxyCallIfNotAdmin
         returns (bytes memory)
     {
         _setImplementation(_implementation);
-        address impl = _resolveImplementation();
-        assembly {
-            calldatacopy(0x0, _data.offset, _data.length)
-            let success := delegatecall(gas(), impl, 0x0, _data.length, 0x0, 0x0)
-            returndatacopy(0x0, 0x0, returndatasize())
-            if iszero(success) { revert(0x0, returndatasize()) }
-            return(0x0, returndatasize())
-        }
+        _implementation = _resolveImplementation();
+        (bool success, bytes memory returndata) = _implementation.delegatecall(_data);
+        require(success, "Proxy: delegatecall to new implementation contract failed");
+        return returndata;
     }
 
     function _getImplementation() internal view returns (address) {
@@ -142,21 +137,10 @@ contract ResolvingProxy {
 
     function _resolveImplementation() internal view returns (address) {
         address proxy = _getImplementation();
-        address admin_ = _getAdmin();
-
         bytes memory data = abi.encodeCall(IResolver.getProxyImplementation, (proxy));
-        address impl;
-        assembly {
-            let success := staticcall(gas(), admin_, add(data, 0x20), mload(data), 0x0, 0x0)
-            if success {
-                if eq(returndatasize(), 0x20) {
-                    returndatacopy(0x0, 0x0, 0x20)
-                    impl := mload(0x0)
-                }
-            }
-        }
-        if (impl != address(0)) {
-            return impl;
+        (bool success, bytes memory returndata) = _getAdmin().staticcall(data);
+        if (success && returndata.length == 0x20) {
+            return abi.decode(returndata, (address));
         }
         return proxy;
     }
