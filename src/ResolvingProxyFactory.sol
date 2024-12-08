@@ -62,7 +62,11 @@ library ResolvingProxyFactory {
         return address(new ResolvingProxy{salt: salt}(proxy, admin));
     }
 
-    function expensiveProxyAddress(address proxy, address admin, bytes32 salt) internal view returns (address predicted) {
+    function expensiveProxyAddress(address proxy, address admin, bytes32 salt)
+        internal
+        view
+        returns (address predicted)
+    {
         bytes memory bytecode = abi.encodePacked(type(ResolvingProxy).creationCode, abi.encode(proxy, admin));
         bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(bytecode)));
         return address(uint160(uint256(hash)));
