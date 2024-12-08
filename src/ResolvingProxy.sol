@@ -1,13 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
+// The ProxyAdmin contract conforms to this interface.
 interface IResolver {
     function getProxyImplementation(address _proxy) external view returns (address);
 }
 
-/// @notice Proxy is a transparent proxy that passes through the call if the caller is the owner or
-///         if the caller is address(0), meaning that the call originated from an off-chain
-///         simulation.
+/// @notice ResolvingProxy is a modification of the op-stack Proxy contract that allows for
+///         proxying a proxy. This is useful to have a central upgradable proxy that this
+///         contract can point to, but also support detaching this proxy so it can have its
+///         own implementation.
+/// @dev Only proxies that are owned by a ProxyAdmin can be proxied by this contract,
+///      because it calls getProxyImplementation() on the ProxyAdmin to retrieve the
+///      implementation address.
+/// @dev This contract is based on the EIP-1967 transparent proxy standard. It is slightly
+///      simplified in that it doesn't emit logs for implementation and admin changes. This
+///      is to simplify the assembly implementation provided in ResolvingProxyFactory.
 contract ResolvingProxy {
     /// @notice The storage slot that holds the address of a proxy implementation.
     /// @dev `bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1)`

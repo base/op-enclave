@@ -3,6 +3,11 @@ pragma solidity ^0.8.15;
 
 import {ResolvingProxy} from "./ResolvingProxy.sol";
 
+/// @title ResolvingProxyFactory
+/// @notice ResolvingProxyFactory is a factory contract that creates ResolvingProxy instances.
+/// @dev The setupProxy / proxyAddress functions provide a smaller assembly-based ResolvingProxy
+///      implementation that is more gas efficient to deploy and operate than the solidity
+///      ResolvingProxy implementation.
 library ResolvingProxyFactory {
     function setupProxy(address proxy, address admin, bytes32 salt) internal returns (address instance) {
         /// @solidity memory-safe-assembly
