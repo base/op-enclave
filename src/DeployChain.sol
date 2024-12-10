@@ -102,14 +102,18 @@ contract DeployChain {
     function deployAddresses(uint256 chainID) external view returns (DeployAddresses memory) {
         bytes32 salt = keccak256(abi.encodePacked(chainID));
         return DeployAddresses({
-            l2OutputOracle: ResolvingProxyFactory.proxyAddress(l2OutputOracle, proxyAdmin, salt),
-            systemConfig: ResolvingProxyFactory.proxyAddress(systemConfig, proxyAdmin, salt),
-            optimismPortal: ResolvingProxyFactory.proxyAddress(optimismPortal, proxyAdmin, salt),
-            l1CrossDomainMessenger: ResolvingProxyFactory.proxyAddress(l1CrossDomainMessenger, proxyAdmin, salt),
-            l1StandardBridge: ResolvingProxyFactory.proxyAddress(l1StandardBridge, proxyAdmin, salt),
-            l1ERC721Bridge: ResolvingProxyFactory.proxyAddress(l1ERC721Bridge, proxyAdmin, salt),
-            optimismMintableERC20Factory: ResolvingProxyFactory.proxyAddress(optimismMintableERC20Factory, proxyAdmin, salt)
+            l2OutputOracle: proxyAddress(l2OutputOracle, salt),
+            systemConfig: proxyAddress(systemConfig, salt),
+            optimismPortal: proxyAddress(optimismPortal, salt),
+            l1CrossDomainMessenger: proxyAddress(l1CrossDomainMessenger, salt),
+            l1StandardBridge: proxyAddress(l1StandardBridge, salt),
+            l1ERC721Bridge: proxyAddress(l1ERC721Bridge, salt),
+            optimismMintableERC20Factory: proxyAddress(optimismMintableERC20Factory, salt)
         });
+    }
+
+    function proxyAddress(address proxy, bytes32 salt) public view returns (address) {
+        return ResolvingProxyFactory.proxyAddress(proxy, proxyAdmin, salt);
     }
 
     function deploy(
@@ -151,14 +155,18 @@ contract DeployChain {
     function setupProxies(uint256 chainID) internal returns (DeployAddresses memory) {
         bytes32 salt = keccak256(abi.encodePacked(chainID));
         return DeployAddresses({
-            l2OutputOracle: ResolvingProxyFactory.setupProxy(l2OutputOracle, proxyAdmin, salt),
-            systemConfig: ResolvingProxyFactory.setupProxy(systemConfig, proxyAdmin, salt),
-            optimismPortal: ResolvingProxyFactory.setupProxy(optimismPortal, proxyAdmin, salt),
-            l1CrossDomainMessenger: ResolvingProxyFactory.setupProxy(l1CrossDomainMessenger, proxyAdmin, salt),
-            l1StandardBridge: ResolvingProxyFactory.setupProxy(l1StandardBridge, proxyAdmin, salt),
-            l1ERC721Bridge: ResolvingProxyFactory.setupProxy(l1ERC721Bridge, proxyAdmin, salt),
-            optimismMintableERC20Factory: ResolvingProxyFactory.setupProxy(optimismMintableERC20Factory, proxyAdmin, salt)
+            l2OutputOracle: deployProxy(l2OutputOracle, salt),
+            systemConfig: deployProxy(systemConfig, salt),
+            optimismPortal: deployProxy(optimismPortal, salt),
+            l1CrossDomainMessenger: deployProxy(l1CrossDomainMessenger, salt),
+            l1StandardBridge: deployProxy(l1StandardBridge, salt),
+            l1ERC721Bridge: deployProxy(l1ERC721Bridge, salt),
+            optimismMintableERC20Factory: deployProxy(optimismMintableERC20Factory, salt)
         });
+    }
+
+    function deployProxy(address proxy, bytes32 salt) public returns (address) {
+        return ResolvingProxyFactory.setupProxy(proxy, proxyAdmin, salt);
     }
 
     function calculateHashes(
