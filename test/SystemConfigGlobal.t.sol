@@ -26,7 +26,7 @@ contract SystemConfigGlobalTest is Test {
         (bytes memory attestationTbs, bytes memory signature) = systemConfigGlobal.decodeAttestationTbs(attestation);
         systemConfigGlobal.registerSigner(attestationTbs, signature);
 
-        address expectedSigner = 0xe04d808785d2BBdE18E9D0C01c05FB8CE0711f2d;
+        address expectedSigner = 0x874a4c5675cd4850dB08bD9A1e3184ED239087e4;
         assertTrue(systemConfigGlobal.validSigners(expectedSigner));
     }
 }

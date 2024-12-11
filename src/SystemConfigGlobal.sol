@@ -5,11 +5,14 @@ pragma solidity ^0.8.0;
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.sol";
 import {NitroValidator} from "@nitro-validator/NitroValidator.sol";
-import {CborDecode} from "@nitro-validator/CborDecode.sol";
+import {LibBytes} from "@nitro-validator/LibBytes.sol";
+import {LibCborElement, CborElement, CborDecode} from "@nitro-validator/CborDecode.sol";
 import {ICertManager} from "@nitro-validator/ICertManager.sol";
 
 contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
+    using LibBytes for bytes;
     using CborDecode for bytes;
+    using LibCborElement for CborElement;
 
     uint256 public constant MAX_AGE = 60 minutes;
 
@@ -56,8 +59,8 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
 
         require(ptrs.timestamp + MAX_AGE > block.timestamp, "attestation too old");
 
-        bytes memory publicKey = attestationTbs.slice(ptrs.publicKey);
-        address enclaveAddress = address(uint160(uint256(keccak256(publicKey))));
+        bytes32 publicKeyHash = attestationTbs.keccak(ptrs.publicKey.start() + 1, ptrs.publicKey.length() - 1);
+        address enclaveAddress = address(uint160(uint256(publicKeyHash)));
         validSigners[enclaveAddress] = true;
     }
 

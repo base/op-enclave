@@ -96,6 +96,22 @@ func main() {
 		panic(err)
 	}
 
+	pub, err := crypto.UnmarshalPubkey(res.Document.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+	signerAddr := crypto.PubkeyToAddress(*pub)
+	validSigner, err := systemConfigGlobal.ValidSigners(&bind.CallOpts{}, signerAddr)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Public key: %s\n", hexutil.Encode(res.Document.PublicKey))
+	fmt.Printf("Signer: %s\n", signerAddr.String())
+	if validSigner {
+		fmt.Printf("Signer already registered: %s\n", signerAddr.String())
+		return
+	}
+
 	certManagerAddr, err := systemConfigGlobal.CertManager(&bind.CallOpts{})
 	if err != nil {
 		panic(err)
