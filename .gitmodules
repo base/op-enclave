@@ -1,9 +1,9 @@
 [submodule "lib/forge-std"]
-	path = lib/forge-std
+	path = contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
 [submodule "lib/optimism"]
-	path = lib/optimism
+	path = contracts/lib/optimism
 	url = https://github.com/ethereum-optimism/optimism
 [submodule "lib/nitro-validator"]
-	path = lib/nitro-validator
+	path = contracts/lib/nitro-validator
 	url = https://github.com/base-org/nitro-validator
