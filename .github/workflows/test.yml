@@ -29,15 +29,18 @@ jobs:
 
       - name: Run Forge fmt
         run: |
+          cd contracts
           forge fmt --check
         id: fmt
 
       - name: Run Forge build
         run: |
+          cd contracts
           forge build --sizes
         id: build
 
       - name: Run Forge tests
         run: |
+          cd contracts
           forge test -vvv
         id: test
