@@ -41,7 +41,7 @@ jobs:
       - name: Build and push the Docker image
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: op-enclave
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
