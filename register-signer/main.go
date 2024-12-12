@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -20,22 +18,18 @@ import (
 	"github.com/hf/nitrite"
 )
 
-type deployment struct {
-	SystemConfigGlobalProxy common.Address `json:"SystemConfigGlobalProxy"`
-}
-
 func main() {
 	var attestationHex string
 	var rpcUrl string
 	var privateKeyHex string
-	var deploymentFile string
+	var configAddress string
 	flag.StringVar(&attestationHex, "attestation", "", "attestation hex")
 	flag.StringVar(&rpcUrl, "rpc", "https://sepolia.base.org", "rpc url")
 	flag.StringVar(&privateKeyHex, "private-key", "", "private key")
-	flag.StringVar(&deploymentFile, "deployment", "deployments/84532-deploy.json", "deployment file")
+	flag.StringVar(&configAddress, "address", "", "address of the SystemConfigGlobal proxy contract")
 	flag.Parse()
 
-	if attestationHex == "" || privateKeyHex == "" {
+	if attestationHex == "" || privateKeyHex == "" || configAddress == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -60,20 +54,6 @@ func main() {
 		panic(err)
 	}
 
-	deploy, err := os.ReadFile(deploymentFile)
-	if err != nil {
-		panic(err)
-	}
-	var d deployment
-	err = json.Unmarshal(deploy, &d)
-	if err != nil {
-		panic(err)
-	}
-
-	if bytes.Equal(common.Address{}.Bytes(), d.SystemConfigGlobalProxy.Bytes()) {
-		panic("SystemConfigGlobalProxy address not found in deployment file")
-	}
-
 	key, err := crypto.ToECDSA(privateKey)
 	if err != nil {
 		panic(err)
@@ -91,7 +71,7 @@ func main() {
 		},
 	}
 
-	systemConfigGlobal, err := bindings.NewSystemConfigGlobal(d.SystemConfigGlobalProxy, client)
+	systemConfigGlobal, err := bindings.NewSystemConfigGlobal(common.HexToAddress(configAddress), client)
 	if err != nil {
 		panic(err)
 	}
@@ -106,10 +86,11 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Public key: %s\n", hexutil.Encode(res.Document.PublicKey))
-	fmt.Printf("Signer: %s\n", signerAddr.String())
 	if validSigner {
 		fmt.Printf("Signer already registered: %s\n", signerAddr.String())
 		return
+	} else {
+		fmt.Printf("Registering signer: %s\n", signerAddr.String())
 	}
 
 	certManagerAddr, err := systemConfigGlobal.CertManager(&bind.CallOpts{})
