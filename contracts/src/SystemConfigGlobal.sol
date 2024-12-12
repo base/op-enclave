@@ -59,6 +59,8 @@ contract SystemConfigGlobal is OwnableUpgradeable, ISemver, NitroValidator {
 
         require(ptrs.timestamp + MAX_AGE > block.timestamp, "attestation too old");
 
+        // The publicKey is encoded in the form specified in section 4.3.6 of ANSI X9.62, which is a
+        // 0x04 byte followed by the x and y coordinates of the public key. We ignore the first byte.
         bytes32 publicKeyHash = attestationTbs.keccak(ptrs.publicKey.start() + 1, ptrs.publicKey.length() - 1);
         address enclaveAddress = address(uint160(uint256(publicKeyHash)));
         validSigners[enclaveAddress] = true;
