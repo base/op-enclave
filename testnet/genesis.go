@@ -291,6 +291,8 @@ func Main(cliCtx *cli.Context) error {
 	config.L2OutputOracleChallenger = common.Address{1}
 	config.SuperchainConfigGuardian = common.Address{1}
 	config.L2OutputOracleSubmissionInterval = 1
+	config.GasPriceOracleBaseFeeScalar = 0
+	config.GasPriceOracleBlobBaseFeeScalar = 0
 
 	// set up deployed contract addresses
 	config.L1StandardBridgeProxy = l1Addresses.L1StandardBridge
