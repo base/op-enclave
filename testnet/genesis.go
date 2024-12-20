@@ -191,7 +191,7 @@ func Main(cliCtx *cli.Context) error {
 		return fmt.Errorf("failed to get ProtocolVersions contract address: %w", err)
 	}
 
-	batchInboxAddress, err := deployChain.CalculateBatchInbox(&bind.CallOpts{}, l2ChainID)
+	batchInboxAddress, err := deployChain.CalculateBatchInbox(&bind.CallOpts{}, 0, l2ChainID)
 	if err != nil {
 		return fmt.Errorf("failed to calculate BatchInbox address: %w", err)
 	}

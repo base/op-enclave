@@ -127,7 +127,7 @@ contract DeployChain {
 
         Hashes memory hashes = calculateHashes(chainID, genesisConfig, gasConfig, addressConfig.batcher, addresses);
 
-        address batchInbox = calculateBatchInbox(chainID);
+        address batchInbox = calculateBatchInbox(0, chainID);
 
         initializeProxies(gasConfig, addressConfig, batchInbox, hashes, addresses, proofsEnabled);
 
@@ -140,16 +140,9 @@ contract DeployChain {
         });
     }
 
-    function calculateBatchInbox(uint256 chainID) public pure returns (address) {
-        uint256 reverse = 0;
-        for (; chainID > 0; chainID /= 10) {
-            reverse = (reverse * 10) + (chainID % 10);
-        }
-        uint256 base16 = 0;
-        for (; reverse > 0; reverse /= 10) {
-            base16 = (base16 << 4) | (reverse % 10);
-        }
-        return address(uint160(base16 | (0xff << 152)));
+    function calculateBatchInbox(uint8 version, uint256 chainID) public pure returns (address) {
+        // see https://specs.optimism.io/protocol/configurability.html#consensus-parameters
+        return address(uint160(uint256(version) << 152 | uint256(keccak256(abi.encodePacked(chainID))) >> 104));
     }
 
     function setupProxies(uint256 chainID) internal returns (DeployAddresses memory) {
