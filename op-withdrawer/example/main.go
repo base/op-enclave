@@ -149,7 +149,7 @@ func ReportBalances(ctx context.Context, l1, l2 *ethclient.Client, addr common.A
 	l1b, _ := l1.BalanceAt(ctx, addr, nil)
 	l2b, _ := l2.BalanceAt(ctx, addr, nil)
 	if l1Balance != nil {
-		fmt.Printf("Balance change of %s on L2: %s, L3: %s\n\n", addr, new(big.Int).Sub(l1b, l1Balance), new(big.Int).Sub(l2b, l2Balance))
+		fmt.Printf("Balance change of %s on L1: %s, L2: %s\n\n", addr, new(big.Int).Sub(l1b, l1Balance), new(big.Int).Sub(l2b, l2Balance))
 	}
 	l1Balance = l1b
 	l2Balance = l2b
