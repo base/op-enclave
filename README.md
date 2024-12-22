@@ -14,7 +14,7 @@ This removes the need for the 7-day challenge period, and allows for immediate w
 ├── <a href="./op-enclave">op-enclave</a>: Stateless transition function, for running in a AWS Nitro TEE
 ├── <a href="./op-proposer">op-proposer</a>: L2-Output Submitter, communicates with op-enclave and submits proposals to L1
 ├── <a href="./op-withdrawer">op-withdrawer</a>: Withdrawal utility for submitting withdrawals to L1
-├── <a href="./register-signer">register-signer</a>: Registers a enclave signer key from a Nitro attestation with the SystemConfigGlobal contract
+├── <a href="./register-signer">register-signer</a>: Registers an enclave signer key from a Nitro attestation with the SystemConfigGlobal contract
 ├── <a href="./testnet">testnet</a>: Dockerized testnet for running the op-enclave stack
 </pre>
 
