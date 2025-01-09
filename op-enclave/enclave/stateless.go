@@ -1,7 +1,6 @@
 package enclave
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -26,7 +25,7 @@ func ExecuteStateless(
 	l1Receipts types.Receipts,
 	previousBlockTxs []hexutil.Bytes,
 	blockHeader *types.Header,
-	blockTxs []hexutil.Bytes,
+	sequencedTxs []hexutil.Bytes,
 	witness *stateless.Witness,
 	messageAccount *eth.AccountResult,
 ) error {
@@ -42,6 +41,11 @@ func ExecuteStateless(
 		return errors.New("invalid parent hash")
 	}
 
+	// block must only contain deposit transactions if it is outside the sequencer drift
+	if len(sequencedTxs) > 0 && blockHeader.Time > l1Origin.Time+maxSequencerDriftFjord {
+		return errors.New("l1 origin is too old")
+	}
+
 	unmarshalTxs := func(rlp []hexutil.Bytes) (types.Transactions, error) {
 		txs := make(types.Transactions, len(rlp))
 		for i, tx := range rlp {
@@ -53,10 +57,6 @@ func ExecuteStateless(
 		return txs, nil
 	}
 	previousTxs, err := unmarshalTxs(previousBlockTxs)
-	if err != nil {
-		return err
-	}
-	txs, err := unmarshalTxs(blockTxs)
 	if err != nil {
 		return err
 	}
@@ -90,25 +90,23 @@ func ExecuteStateless(
 		return fmt.Errorf("failed to prepare payload attributes: %w", err)
 	}
 
-	if txs.Len() < len(payload.Transactions) {
-		return errors.New("invalid transaction count")
+	// sequencer cannot include manual deposit transactions; otherwise it could mint funds arbitrarily
+	txs, err := unmarshalTxs(sequencedTxs)
+	if err != nil {
+		return err
 	}
-
-	for i, payloadTx := range payload.Transactions {
-		tx := txs[i]
-		if !tx.IsDepositTx() {
-			return errors.New("invalid transaction type")
-		}
-		if !bytes.Equal(blockTxs[i], payloadTx) {
-			return errors.New("invalid deposit transaction")
+	for _, tx := range txs {
+		if tx.IsDepositTx() {
+			return errors.New("sequenced txs cannot include deposits")
 		}
 	}
 
-	// block must only contain deposit transactions if it is outside the sequencer drift
-	if txs.Len() > len(payload.Transactions) &&
-		blockHeader.Time > l1Origin.Time+maxSequencerDriftFjord {
-		return errors.New("L1 origin is too old")
+	// now add the deposits from L1 (and any from fork upgrades)
+	payloadTxs, err := unmarshalTxs(payload.Transactions)
+	if err != nil {
+		return fmt.Errorf("failed to parse payload transactions: %w", err)
 	}
+	txs = append(payloadTxs, txs...)
 
 	expectedRoot := blockHeader.Root
 	expectedReceiptHash := blockHeader.ReceiptHash

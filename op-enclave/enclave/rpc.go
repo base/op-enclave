@@ -26,7 +26,7 @@ type RPC interface {
 		l1Receipts types.Receipts,
 		previousBlockTxs []hexutil.Bytes,
 		blockHeader *types.Header,
-		blockTxs []hexutil.Bytes,
+		sequencedTxs []hexutil.Bytes,
 		witness *stateless.ExecutionWitness,
 		messageAccount *eth.AccountResult,
 		prevMessageAccountHash common.Hash,

@@ -243,7 +243,7 @@ func (s *Server) ExecuteStateless(
 	l1Receipts types.Receipts,
 	previousBlockTxs []hexutil.Bytes,
 	blockHeader *types.Header,
-	blockTxs []hexutil.Bytes,
+	sequencedTxs []hexutil.Bytes,
 	witness *stateless.ExecutionWitness,
 	messageAccount *eth.AccountResult,
 	prevMessageAccountHash common.Hash,
@@ -267,7 +267,7 @@ func (s *Server) ExecuteStateless(
 	previousBlockHeader := w.Headers[0]
 
 	err = ExecuteStateless(ctx, config.ChainConfig, config.ToRollupConfig(),
-		l1Origin, l1Receipts, previousBlockTxs, blockHeader, blockTxs, w, messageAccount)
+		l1Origin, l1Receipts, previousBlockTxs, blockHeader, sequencedTxs, w, messageAccount)
 	if err != nil {
 		return nil, err
 	}

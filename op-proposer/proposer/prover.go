@@ -118,21 +118,25 @@ func (o *Prover) Generate(ctx context.Context, block *types.Block) (*Proposal, e
 		return nil, &multierror.Error{Errors: errors}
 	}
 
-	marshalTxs := func(txs types.Transactions) ([]hexutil.Bytes, error) {
-		rlp := make([]hexutil.Bytes, len(txs))
-		var err error
-		for i, tx := range txs {
-			if rlp[i], err = tx.MarshalBinary(); err != nil {
+	marshalTxs := func(txs types.Transactions, includeDeposits bool) ([]hexutil.Bytes, error) {
+		var rlps []hexutil.Bytes
+		for _, tx := range txs {
+			if !includeDeposits && tx.IsDepositTx() {
+				continue
+			}
+			rlp, err := tx.MarshalBinary()
+			if err != nil {
 				return nil, fmt.Errorf("failed to marshal transaction: %w", err)
 			}
+			rlps = append(rlps, rlp)
 		}
-		return rlp, nil
+		return rlps, nil
 	}
-	previousTxs, err := marshalTxs(previousBlock.value.Transactions())
+	previousTxs, err := marshalTxs(previousBlock.value.Transactions(), true)
 	if err != nil {
 		return nil, err
 	}
-	txs, err := marshalTxs(block.Transactions())
+	sequencedTxs, err := marshalTxs(block.Transactions(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +148,7 @@ func (o *Prover) Generate(ctx context.Context, block *types.Block) (*Proposal, e
 		l1Receipts.value,
 		previousTxs,
 		block.Header(),
-		txs,
+		sequencedTxs,
 		witness.value,
 		messageAccount.value,
 		prevMessageAccount.value.StorageHash,

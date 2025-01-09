@@ -50,9 +50,9 @@ func (c *Client) SetSignerKey(ctx context.Context, encrypted hexutil.Bytes) erro
 	return c.callContext(ctx, nil, "setSignerKey", encrypted)
 }
 
-func (c *Client) ExecuteStateless(ctx context.Context, config *PerChainConfig, l1Origin *types.Header, l1Receipts types.Receipts, previousBlockTxs []hexutil.Bytes, blockHeader *types.Header, blockTxs []hexutil.Bytes, witness *stateless.ExecutionWitness, messageAccount *eth.AccountResult, prevMessageAccountHash common.Hash) (*Proposal, error) {
+func (c *Client) ExecuteStateless(ctx context.Context, config *PerChainConfig, l1Origin *types.Header, l1Receipts types.Receipts, previousBlockTxs []hexutil.Bytes, blockHeader *types.Header, sequencedTxs []hexutil.Bytes, witness *stateless.ExecutionWitness, messageAccount *eth.AccountResult, prevMessageAccountHash common.Hash) (*Proposal, error) {
 	var result Proposal
-	return &result, c.callContext(ctx, &result, "executeStateless", config, l1Origin, l1Receipts, previousBlockTxs, blockHeader, blockTxs, witness, messageAccount, prevMessageAccountHash)
+	return &result, c.callContext(ctx, &result, "executeStateless", config, l1Origin, l1Receipts, previousBlockTxs, blockHeader, sequencedTxs, witness, messageAccount, prevMessageAccountHash)
 }
 
 func (c *Client) Aggregate(ctx context.Context, configHash common.Hash, prevOutputRoot common.Hash, proposals []*Proposal) (*Proposal, error) {
