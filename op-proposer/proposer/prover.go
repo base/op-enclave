@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/predeploys"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hashicorp/go-multierror"
 )
@@ -52,7 +53,7 @@ func NewProver(
 }
 
 func (o *Prover) Generate(ctx context.Context, block *types.Block) (*Proposal, error) {
-	witnessCh := await(func() ([]byte, error) {
+	witnessCh := await(func() (*stateless.ExecutionWitness, error) {
 		return o.l2.ExecutionWitness(ctx, block.Hash())
 	}, func(err error) error {
 		return fmt.Errorf("failed to fetch witness: %w", err)

@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -49,7 +50,7 @@ func (c *Client) SetSignerKey(ctx context.Context, encrypted hexutil.Bytes) erro
 	return c.callContext(ctx, nil, "setSignerKey", encrypted)
 }
 
-func (c *Client) ExecuteStateless(ctx context.Context, config *PerChainConfig, l1Origin *types.Header, l1Receipts types.Receipts, previousBlockTxs []hexutil.Bytes, blockHeader *types.Header, blockTxs []hexutil.Bytes, witness hexutil.Bytes, messageAccount *eth.AccountResult, prevMessageAccountHash common.Hash) (*Proposal, error) {
+func (c *Client) ExecuteStateless(ctx context.Context, config *PerChainConfig, l1Origin *types.Header, l1Receipts types.Receipts, previousBlockTxs []hexutil.Bytes, blockHeader *types.Header, blockTxs []hexutil.Bytes, witness *stateless.ExecutionWitness, messageAccount *eth.AccountResult, prevMessageAccountHash common.Hash) (*Proposal, error) {
 	var result Proposal
 	return &result, c.callContext(ctx, &result, "executeStateless", config, l1Origin, l1Receipts, previousBlockTxs, blockHeader, blockTxs, witness, messageAccount, prevMessageAccountHash)
 }

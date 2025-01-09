@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/sources/caching"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
@@ -32,7 +32,7 @@ type L2Client interface {
 	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
 	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
 	BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error)
-	ExecutionWitness(ctx context.Context, hash common.Hash) ([]byte, error)
+	ExecutionWitness(ctx context.Context, hash common.Hash) (*stateless.ExecutionWitness, error)
 	Close()
 }
 
@@ -165,10 +165,10 @@ func (e *ethClient) GetProof(ctx context.Context, address common.Address, hash c
 	return proof, nil
 }
 
-func (e *ethClient) ExecutionWitness(ctx context.Context, hash common.Hash) ([]byte, error) {
-	var buf hexutil.Bytes
-	err := e.client.Client().CallContext(ctx, &buf, "debug_executionWitness", hash)
-	return buf, err
+func (e *ethClient) ExecutionWitness(ctx context.Context, hash common.Hash) (*stateless.ExecutionWitness, error) {
+	var witness stateless.ExecutionWitness
+	err := e.client.Client().CallContext(ctx, &witness, "debug_executionWitness", hash)
+	return &witness, err
 }
 
 func (e *ethClient) Close() {

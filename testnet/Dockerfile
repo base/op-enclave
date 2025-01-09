@@ -2,15 +2,21 @@ FROM golang:1.22 AS op-node
 
 WORKDIR /app
 
-ENV REPO=https://github.com/mdehoog/optimism.git
-ENV VERSION=l3
-ENV COMMIT=445adf498c862eaef12e650909938d2abad9d143
-RUN git clone $REPO --branch $VERSION --single-branch . && \
-    git switch -c branch-$VERSION && \
-    bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
+ENV REPO=https://github.com/ethereum-optimism/optimism.git
+#ENV VERSION=l3
+ENV COMMIT=d1ccc976f7c410fede45fd561b8900c077f22029
+#RUN git clone $REPO --branch $VERSION --single-branch . && \
+#    git switch -c branch-$VERSION && \
+#    bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
+RUN git init && \
+    git remote add origin $REPO && \
+    git fetch --depth 1 origin $COMMIT && \
+    git checkout FETCH_HEAD
+
+RUN curl -sSfL 'https://just.systems/install.sh' | bash -s -- --to /usr/local/bin
 
 RUN cd op-node && \
-    make VERSION=$VERSION op-node
+    just VERSION=$VERSION op-node
 
 
 FROM golang:1.22 AS op-enclave
@@ -39,12 +45,16 @@ FROM golang:1.22 AS op-geth
 
 WORKDIR /app
 
-ENV REPO=https://github.com/mdehoog/op-geth.git
-ENV VERSION=witness2
-ENV COMMIT=d8f4cde5a85265a258dfcd21f0c735d8aefaa07d
-RUN git clone $REPO --branch $VERSION --single-branch . && \
-    git switch -c branch-$VERSION && \
-    bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
+ENV REPO=https://github.com/ethereum-optimism/op-geth.git
+#ENV VERSION=witness2
+ENV COMMIT=928070c7fc097362ed2d40a4f72889ba91544931
+#RUN git clone $REPO --branch $VERSION --single-branch . && \
+#    git switch -c branch-$VERSION && \
+#    bash -c '[ "$(git rev-parse HEAD)" = "$COMMIT" ]'
+RUN git init && \
+    git remote add origin $REPO && \
+    git fetch --depth 1 origin $COMMIT && \
+    git checkout FETCH_HEAD
 
 RUN go run build/ci.go install -static ./cmd/geth
 

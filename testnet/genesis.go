@@ -14,12 +14,12 @@ import (
 	"time"
 
 	"github.com/base-org/op-enclave/bindings"
+	"github.com/base-org/op-enclave/op-enclave/enclave"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/deployer/opcm"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/deployer/state"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/foundry"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/script"
+	"github.com/ethereum-optimism/optimism/op-deployer/pkg/deployer/opcm"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
 	"github.com/ethereum-optimism/optimism/op-service/ctxinterrupt"
 	oplog "github.com/ethereum-optimism/optimism/op-service/log"
@@ -122,7 +122,6 @@ func (c *Config) Check() error {
 		return errors.New("missing sequencer fee vault recipient")
 	}
 	return nil
-
 }
 
 func main() {
@@ -263,7 +262,7 @@ func Main(cliCtx *cli.Context) error {
 		return fmt.Errorf("config check failed: %w", err)
 	}
 
-	config := state.DefaultDeployConfig()
+	config := enclave.DefaultDeployConfig()
 
 	// copy config from input
 	config.ProxyAdminOwner = genesisConfig.ProxyAdminOwner

@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -26,7 +27,7 @@ type RPC interface {
 		previousBlockTxs []hexutil.Bytes,
 		blockHeader *types.Header,
 		blockTxs []hexutil.Bytes,
-		witness hexutil.Bytes,
+		witness *stateless.ExecutionWitness,
 		messageAccount *eth.AccountResult,
 		prevMessageAccountHash common.Hash,
 	) (*Proposal, error)

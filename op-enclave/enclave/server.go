@@ -24,7 +24,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/hf/nitrite"
 	"github.com/hf/nsm"
 	"github.com/hf/nsm/request"
@@ -245,14 +244,22 @@ func (s *Server) ExecuteStateless(
 	previousBlockTxs []hexutil.Bytes,
 	blockHeader *types.Header,
 	blockTxs []hexutil.Bytes,
-	witness hexutil.Bytes,
+	witness *stateless.ExecutionWitness,
 	messageAccount *eth.AccountResult,
 	prevMessageAccountHash common.Hash,
 ) (*Proposal, error) {
-	w := &stateless.Witness{}
-	err := rlp.DecodeBytes(witness, w)
+	codes, err := transformMap(witness.Codes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode witness: %w", err)
+	}
+	state, err := transformMap(witness.State)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode witness: %w", err)
+	}
+	w := &stateless.Witness{
+		Headers: witness.Headers,
+		Codes:   codes,
+		State:   state,
 	}
 
 	config := NewChainConfig(cfg)
@@ -338,4 +345,16 @@ func outputRootV0(header *types.Header, storageRoot common.Hash) common.Hash {
 	copy(buf[64:], storageRoot[:])
 	copy(buf[96:], hash[:])
 	return crypto.Keccak256Hash(buf[:])
+}
+
+func transformMap(in map[string]string) (map[string]struct{}, error) {
+	out := make(map[string]struct{}, len(in))
+	for _, item := range in {
+		value, err := hexutil.Decode(item)
+		if err != nil {
+			return nil, err
+		}
+		out[string(value)] = struct{}{}
+	}
+	return out, nil
 }
