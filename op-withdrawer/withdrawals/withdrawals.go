@@ -3,7 +3,7 @@ package withdrawals
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -22,12 +22,13 @@ type ProofClient interface {
 
 type EthClient interface {
 	TransactionReceipt(context.Context, common.Hash) (*types.Receipt, error)
-	BlockByNumber(context.Context, *big.Int) (*types.Block, error)
+	HeaderByNumber(context.Context, *big.Int) (*types.Header, error)
 }
 
 type OutputOracle interface {
 	LatestBlockNumber(opts *bind.CallOpts) (*big.Int, error)
 	GetL2OutputIndexAfter(opts *bind.CallOpts, _l2BlockNumber *big.Int) (*big.Int, error)
+	LatestOutputIndex(opts *bind.CallOpts) (*big.Int, error)
 }
 
 type Portal interface {
@@ -51,38 +52,60 @@ func WaitForOutputBlock(ctx context.Context, outputOracle *bindings.OutputOracle
 	}
 }
 
-func ProveAndFinalizeWithdrawal(ctx context.Context, l2ProofCl ProofClient, l2Client EthClient, opts *bind.TransactOpts, outputOracle OutputOracle, portal Portal, withdrawalTxHash common.Hash, l2OutputBlock *big.Int) (*types.Transaction, error) {
-	l2OutputIndex, err := outputOracle.GetL2OutputIndexAfter(&bind.CallOpts{}, l2OutputBlock)
+func ProveAndFinalizeWithdrawals(ctx context.Context, l2ProofCl ProofClient, l2Client EthClient, opts *bind.TransactOpts, outputOracle OutputOracle, portal Portal, withdrawalTxHash common.Hash, l2OutputBlock *big.Int) ([]*types.Transaction, error) {
+	l2OutputIndex, err := outputOracle.LatestOutputIndex(&bind.CallOpts{})
 	if err != nil {
-		log.Fatalf("Error getting L2 output index: %v", err)
+		return nil, fmt.Errorf("error getting output index: %w", err)
 	}
 
-	withdrawal, err := withdrawals.ProveWithdrawalParametersForBlock(ctx, l2ProofCl, l2Client, l2Client, withdrawalTxHash, l2OutputBlock, l2OutputIndex)
+	receipt, err := l2Client.TransactionReceipt(ctx, withdrawalTxHash)
 	if err != nil {
-		log.Fatalf("Error proving withdrawal parameters: %v", err)
+		return nil, fmt.Errorf("error getting withdrawal transaction receipt: %w", err)
+	}
+	evs, err := withdrawals.ParseMessagesPassed(receipt)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing withdrawal logs: %w", err)
 	}
 
-	outputRootProof := bindings.TypesOutputRootProof{
-		Version:                  withdrawal.OutputRootProof.Version,
-		StateRoot:                withdrawal.OutputRootProof.StateRoot,
-		MessagePasserStorageRoot: withdrawal.OutputRootProof.MessagePasserStorageRoot,
-		LatestBlockhash:          withdrawal.OutputRootProof.LatestBlockhash,
+	header, err := l2Client.HeaderByNumber(ctx, l2OutputBlock)
+	if err != nil {
+		return nil, fmt.Errorf("error requesting block header: %w", err)
 	}
 
-	return portal.ProveAndFinalizeWithdrawalTransaction(
-		opts,
-		bindings.TypesWithdrawalTransaction{
-			Nonce:    withdrawal.Nonce,
-			Sender:   withdrawal.Sender,
-			Target:   withdrawal.Target,
-			Value:    withdrawal.Value,
-			GasLimit: withdrawal.GasLimit,
-			Data:     withdrawal.Data,
-		},
-		withdrawal.L2OutputIndex,
-		outputRootProof,
-		withdrawal.WithdrawalProof,
-	)
+	txs := make([]*types.Transaction, len(evs))
+	for i, ev := range evs {
+		withdrawal, err := withdrawals.ProveWithdrawalParametersForEvent(ctx, l2ProofCl, ev, header, l2OutputIndex)
+		if err != nil {
+			return nil, fmt.Errorf("error generating withdrawal proof: %w", err)
+		}
+
+		outputRootProof := bindings.TypesOutputRootProof{
+			Version:                  withdrawal.OutputRootProof.Version,
+			StateRoot:                withdrawal.OutputRootProof.StateRoot,
+			MessagePasserStorageRoot: withdrawal.OutputRootProof.MessagePasserStorageRoot,
+			LatestBlockhash:          withdrawal.OutputRootProof.LatestBlockhash,
+		}
+
+		txs[i], err = portal.ProveAndFinalizeWithdrawalTransaction(
+			opts,
+			bindings.TypesWithdrawalTransaction{
+				Nonce:    withdrawal.Nonce,
+				Sender:   withdrawal.Sender,
+				Target:   withdrawal.Target,
+				Value:    withdrawal.Value,
+				GasLimit: withdrawal.GasLimit,
+				Data:     withdrawal.Data,
+			},
+			withdrawal.L2OutputIndex,
+			outputRootProof,
+			withdrawal.WithdrawalProof,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error submitting withdrawal tx: %w", err)
+		}
+	}
+
+	return txs, nil
 }
 
 func WaitForReceipt(ctx context.Context, client EthClient, txHash common.Hash, pollInterval time.Duration) (*types.Receipt, error) {

@@ -233,10 +233,11 @@ func ProveWithdrawal(ctx context.Context, l1, l2 *ethclient.Client, l2g *gethcli
 	l2OutputBlock, err := withdrawals.WaitForOutputBlock(ctx, outputOracle, withdrawalTxBlock, pollInterval)
 	fmt.Println("done")
 
-	tx, err := withdrawals.ProveAndFinalizeWithdrawal(ctx, l2g, l2, opts, outputOracle, portal, withdrawalTxHash, l2OutputBlock)
+	txs, err := withdrawals.ProveAndFinalizeWithdrawals(ctx, l2g, l2, opts, outputOracle, portal, withdrawalTxHash, l2OutputBlock)
 	if err != nil {
 		log.Fatalf("Error proving and finalizing withdrawal: %v", err)
 	}
+	tx := txs[0]
 	receipt, err := withdrawals.WaitForReceipt(ctx, l1, tx.Hash(), pollInterval)
 	if err != nil {
 		log.Fatalf("Error waiting for confirmation: %v", err)

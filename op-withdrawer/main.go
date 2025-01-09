@@ -61,7 +61,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		{
 			Name:   "depositHash",
-			Usage:  "Calculate L2 deposit hash from L1 deposit tx",
+			Usage:  "Calculate L2 deposit hash(es) from L1 deposit tx",
 			Action: DepositHash,
 			Flags: []cli.Flag{
 				L1URLFlag,
@@ -70,7 +70,7 @@ func main() {
 		},
 		{
 			Name:   "proveWithdrawal",
-			Usage:  "Prove and finalize an L2 -> L1 withdrawal",
+			Usage:  "Prove and finalize L2 -> L1 withdrawal(s)",
 			Action: Main,
 			Flags: []cli.Flag{
 				L1URLFlag,
@@ -132,17 +132,19 @@ func Main(cliCtx *cli.Context) error {
 		return err
 	}
 
-	receipt, err = ProveWithdrawal(ctx, l1, l2, l2g, opts, portal, withdrawalTxHash, receipt.BlockNumber)
+	receipts, err := ProveWithdrawal(ctx, l1, l2, l2g, opts, portal, withdrawalTxHash, receipt.BlockNumber)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Withdrawal proved and finalized: %s\n", receipt.TxHash)
+	for _, receipt := range receipts {
+		fmt.Printf("Withdrawal proved and finalized: %s\n", receipt.TxHash)
+	}
 
 	return nil
 }
 
-func ProveWithdrawal(ctx context.Context, l1, l2 *ethclient.Client, l2g *gethclient.Client, opts *bind.TransactOpts, portal *bindings.Portal, withdrawalTxHash common.Hash, withdrawalTxBlock *big.Int) (*types.Receipt, error) {
+func ProveWithdrawal(ctx context.Context, l1, l2 *ethclient.Client, l2g *gethclient.Client, opts *bind.TransactOpts, portal *bindings.Portal, withdrawalTxHash common.Hash, withdrawalTxBlock *big.Int) ([]*types.Receipt, error) {
 	pollInterval := 1 * time.Second
 
 	outputOracleAddress, err := portal.L2Oracle(&bind.CallOpts{})
@@ -158,11 +160,19 @@ func ProveWithdrawal(ctx context.Context, l1, l2 *ethclient.Client, l2g *gethcli
 	l2OutputBlock, err := withdrawals.WaitForOutputBlock(ctx, outputOracle, withdrawalTxBlock, pollInterval)
 	fmt.Println("done")
 
-	tx, err := withdrawals.ProveAndFinalizeWithdrawal(ctx, l2g, l2, opts, outputOracle, portal, withdrawalTxHash, l2OutputBlock)
+	txs, err := withdrawals.ProveAndFinalizeWithdrawals(ctx, l2g, l2, opts, outputOracle, portal, withdrawalTxHash, l2OutputBlock)
 	if err != nil {
 		return nil, err
 	}
-	return withdrawals.WaitForReceipt(ctx, l1, tx.Hash(), pollInterval)
+
+	receipts := make([]*types.Receipt, len(txs))
+	for i, tx := range txs {
+		receipts[i], err = withdrawals.WaitForReceipt(ctx, l1, tx.Hash(), pollInterval)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return receipts, nil
 }
 
 func DepositHash(cliCtx *cli.Context) error {
