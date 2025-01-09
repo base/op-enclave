@@ -14,6 +14,7 @@ contract DeployDeployChain is Script, Artifacts {
         console.log("Deploying DeployChain implementation");
         vm.broadcast();
         DeployChain deployChain = new DeployChain{salt: _implSalt()}({
+            _owner: tx.origin,
             _proxyAdmin: mustGetAddress("ProxyAdmin"),
             _optimismPortal: mustGetAddress("OptimismPortalProxy"),
             _systemConfig: mustGetAddress("SystemConfigProxy"),

@@ -201,6 +201,7 @@ contract DeploySystem is Deploy {
     function deployDeployChain() public broadcast returns (address addr_) {
         console.log("Deploying DeployChain implementation");
         DeployChain deployChain = new DeployChain{salt: _implSalt()}({
+            _owner: tx.origin,
             _proxyAdmin: mustGetAddress("ProxyAdmin"),
             _optimismPortal: mustGetAddress("OptimismPortalProxy"),
             _systemConfig: mustGetAddress("SystemConfigProxy"),

@@ -77,6 +77,7 @@ contract DeployChain is Ownable {
     address public immutable protocolVersions;
 
     constructor(
+        address _owner,
         address _proxyAdmin,
         address _optimismPortal,
         address _systemConfig,
@@ -108,6 +109,7 @@ contract DeployChain is Ownable {
         l2OutputOracle = _l2OutputOracle;
         superchainConfig = _superchainConfig;
         protocolVersions = _protocolVersions;
+        transferOwnership(_owner);
     }
 
     function deployAddresses(uint256 chainID) external view returns (DeployAddresses memory) {
