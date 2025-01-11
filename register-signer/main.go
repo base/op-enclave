@@ -109,7 +109,12 @@ func main() {
 			panic(err)
 		}
 		if len(verified) == 0 {
-			tx, err := certManager.VerifyCert(auth, cert, ca, parentCertHash)
+			var tx *types.Transaction
+			if ca {
+				tx, err = certManager.VerifyCACert(auth, cert, parentCertHash)
+			} else {
+				tx, err = certManager.VerifyClientCert(auth, cert, parentCertHash)
+			}
 			if err != nil {
 				panic(err)
 			}
