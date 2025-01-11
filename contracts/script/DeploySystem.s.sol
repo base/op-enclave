@@ -133,7 +133,7 @@ contract DeploySystem is Deploy {
 
         uint256 timestamp = vm.getBlockTimestamp();
         vm.warp(1732580000);
-        ICertManager(certManagerAddress).verifyCert(cert, true, keccak256(parent));
+        ICertManager(certManagerAddress).verifyCACert(cert, keccak256(parent));
         vm.warp(timestamp);
     }
 
