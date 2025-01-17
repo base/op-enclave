@@ -70,7 +70,7 @@ contract ResolvingProxy {
         _setAdmin(_admin);
     }
 
-    //// @notice Queries the implementation address.
+    /// @notice Queries the implementation address.
     /// @return Implementation address.
     function implementation() external virtual proxyCallIfNotAdmin returns (address) {
         return _getImplementation();
