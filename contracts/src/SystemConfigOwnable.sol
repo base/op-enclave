@@ -20,7 +20,7 @@ import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResour
 /// @custom:proxied true
 /// @title SystemConfigOwnable
 /// @notice The SystemConfig contract is used to manage configuration of an Optimism network.
-///         All configuration is stored on L1 and picked up by L2 as part of the derviation of
+///         All configuration is stored on L1 and picked up by L2 as part of the derivation of
 ///         the L2 chain.
 contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
     /// @notice Version identifier, used for upgrades.
