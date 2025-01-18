@@ -11,7 +11,7 @@ This removes the need for the 7-day challenge period, and allows for immediate w
 ├── <a href="./contracts">contracts</a>: Solidity contracts
 ├── <a href="./op-batcher">op-batcher</a>: Batcher modification that submits batches immediately after withdrawals are detected
 ├── <a href="./op-da">op-da</a>: Data availability service for writing to S3 / file system
-├── <a href="./op-enclave">op-enclave</a>: Stateless transition function, for running in a AWS Nitro TEE
+├── <a href="./op-enclave">op-enclave</a>: Stateless transition function, for running in an AWS Nitro TEE
 ├── <a href="./op-proposer">op-proposer</a>: L2-Output Submitter, communicates with op-enclave and submits proposals to L1
 ├── <a href="./op-withdrawer">op-withdrawer</a>: Withdrawal utility for submitting withdrawals to L1
 ├── <a href="./register-signer">register-signer</a>: Registers an enclave signer key from a Nitro attestation with the SystemConfigGlobal contract
