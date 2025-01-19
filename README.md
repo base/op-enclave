@@ -40,5 +40,5 @@ in particular the `# per deploy` section at the top.
 
 5. Run the testnet:
 ```bash
-docker-compose -f testnet/Dockerfile up
+docker-compose -f testnet/docker-compose.yml up
 ```
