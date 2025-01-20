@@ -29,7 +29,7 @@ var (
 	_ = abi.ConvertType
 )
 
-// TypesOutputProposal is an auto generated low-level Go binding around an user-defined struct.
+// TypesOutputProposal is an auto generated low-level Go binding around a user-defined struct.
 type TypesOutputProposal struct {
 	OutputRoot    [32]byte
 	Timestamp     *big.Int
