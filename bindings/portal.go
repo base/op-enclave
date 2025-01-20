@@ -29,7 +29,7 @@ var (
 	_ = abi.ConvertType
 )
 
-// TypesOutputRootProof is an auto generated low-level Go binding around an user-defined struct.
+// TypesOutputRootProof is an auto generated low-level Go binding around a user-defined struct.
 type TypesOutputRootProof struct {
 	Version                  [32]byte
 	StateRoot                [32]byte
@@ -37,7 +37,7 @@ type TypesOutputRootProof struct {
 	LatestBlockhash          [32]byte
 }
 
-// TypesWithdrawalTransaction is an auto generated low-level Go binding around an user-defined struct.
+// TypesWithdrawalTransaction is an auto generated low-level Go binding around a user-defined struct.
 type TypesWithdrawalTransaction struct {
 	Nonce    *big.Int
 	Sender   common.Address
