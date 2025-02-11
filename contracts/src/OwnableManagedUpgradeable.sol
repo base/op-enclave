@@ -44,6 +44,14 @@ abstract contract OwnableManagedUpgradeable is Initializable, ContextUpgradeable
     }
 
     /**
+     * @dev Throws if called by any account other than the owner or manager.
+     */
+    modifier onlyOwnerOrManager() {
+        _checkOwnerOrManager();
+        _;
+    }
+
+    /**
      * @dev Returns the address of the current owner.
      */
     function owner() public view virtual returns (address) {
@@ -72,6 +80,16 @@ abstract contract OwnableManagedUpgradeable is Initializable, ContextUpgradeable
     }
 
     /**
+     * @dev Throws if the sender is not the owner or the manager.
+     */
+    function _checkOwnerOrManager() internal view virtual {
+        require(
+            owner() == _msgSender() || manager() == _msgSender(),
+            "OwnableManaged: caller is not the owner or the manager"
+        );
+    }
+
+    /**
      * @dev Leaves the contract without owner. It will not be possible to call
      * `onlyOwner` functions anymore. Can only be called by the current owner.
      *
@@ -84,12 +102,12 @@ abstract contract OwnableManagedUpgradeable is Initializable, ContextUpgradeable
 
     /**
      * @dev Leaves the contract without manager. It will not be possible to call
-     * `onlyManager` functions anymore. Can only be called by the current owner.
+     * `onlyManager` functions anymore. Can only be called by the current owner or manager.
      *
      * NOTE: Renouncing management will leave the contract without an manager,
      * thereby removing any functionality that is only available to the manager.
      */
-    function renounceManagement() public virtual onlyOwner {
+    function renounceManagement() public virtual onlyOwnerOrManager {
         _transferManagement(address(0));
     }
 
@@ -104,9 +122,9 @@ abstract contract OwnableManagedUpgradeable is Initializable, ContextUpgradeable
 
     /**
      * @dev Transfers management of the contract to a new account (`newManager`).
-     * Can only be called by the current owner.
+     * Can only be called by the current owner or manager.
      */
-    function transferManagement(address newManager) public virtual onlyOwner {
+    function transferManagement(address newManager) public virtual onlyOwnerOrManager {
         require(newManager != address(0), "OwnableManaged: new manager is the zero address");
         _transferManagement(newManager);
     }

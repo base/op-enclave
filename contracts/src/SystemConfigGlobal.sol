@@ -37,9 +37,8 @@ contract SystemConfigGlobal is OwnableManagedUpgradeable, ISemver, NitroValidato
 
     function initialize(address _owner, address _manager) public initializer {
         __OwnableManaged_init();
-        // transferManagement is onlyOwner and must be called prior to transferOwnership
-        transferManagement(_manager);
         transferOwnership(_owner);
+        transferManagement(_manager);
     }
 
     function setProposer(address _proposer) external onlyOwner {
@@ -54,7 +53,7 @@ contract SystemConfigGlobal is OwnableManagedUpgradeable, ISemver, NitroValidato
         delete validPCR0s[keccak256(pcr0)];
     }
 
-    function registerSigner(bytes calldata attestationTbs, bytes calldata signature) external onlyManager {
+    function registerSigner(bytes calldata attestationTbs, bytes calldata signature) external onlyOwnerOrManager {
         Ptrs memory ptrs = validateAttestation(attestationTbs, signature);
         bytes32 pcr0 = attestationTbs.keccak(ptrs.pcrs[0]);
         require(validPCR0s[pcr0], "invalid pcr0 in attestation");
@@ -68,7 +67,7 @@ contract SystemConfigGlobal is OwnableManagedUpgradeable, ISemver, NitroValidato
         validSigners[enclaveAddress] = true;
     }
 
-    function deregisterSigner(address signer) external onlyManager {
+    function deregisterSigner(address signer) external onlyOwnerOrManager {
         delete validSigners[signer];
     }
 }
