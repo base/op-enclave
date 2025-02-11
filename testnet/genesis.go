@@ -87,7 +87,6 @@ var Flags = []cli.Flag{
 
 type Config struct {
 	ProxyAdminOwner            common.Address `json:"proxyAdminOwner"`
-	FinalSystemOwner           common.Address `json:"finalSystemOwner"`
 	BatchSenderAddress         common.Address `json:"batchSenderAddress"`
 	L2OutputOracleProposer     common.Address `json:"l2OutputOracleProposer"`
 	P2PSequencerAddress        common.Address `json:"p2pSequencerAddress"`
@@ -99,9 +98,6 @@ type Config struct {
 func (c *Config) Check() error {
 	if c.ProxyAdminOwner == (common.Address{}) {
 		return errors.New("missing proxy admin owner")
-	}
-	if c.FinalSystemOwner == (common.Address{}) {
-		return errors.New("missing final system owner")
 	}
 	if c.BatchSenderAddress == (common.Address{}) {
 		return errors.New("missing batch sender address")
@@ -240,7 +236,6 @@ func Main(cliCtx *cli.Context) error {
 			return crypto.PubkeyToAddress(crypto.ToECDSAUnsafe(common.FromHex(keys[name])).PublicKey)
 		}
 		genesisConfig.ProxyAdminOwner = toAddress("proxyAdminOwner")
-		genesisConfig.FinalSystemOwner = toAddress("finalSystemOwner")
 		genesisConfig.BatchSenderAddress = toAddress("batchSender")
 		genesisConfig.L2OutputOracleProposer = toAddress("l2OutputOracleProposer")
 		genesisConfig.P2PSequencerAddress = toAddress("p2pSequencer")
@@ -266,7 +261,6 @@ func Main(cliCtx *cli.Context) error {
 
 	// copy config from input
 	config.ProxyAdminOwner = genesisConfig.ProxyAdminOwner
-	config.FinalSystemOwner = genesisConfig.FinalSystemOwner
 	config.P2PSequencerAddress = genesisConfig.P2PSequencerAddress
 	config.BatchSenderAddress = genesisConfig.BatchSenderAddress
 	config.L2OutputOracleProposer = genesisConfig.L2OutputOracleProposer
