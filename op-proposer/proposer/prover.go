@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/base-org/op-enclave/op-enclave/enclave"
+	"github.com/base/op-enclave/op-enclave/enclave"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum-optimism/optimism/op-service/predeploys"

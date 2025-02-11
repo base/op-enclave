@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	thisflags "github.com/base-org/op-enclave/op-proposer/flags"
+	thisflags "github.com/base/op-enclave/op-proposer/flags"
 	"github.com/ethereum-optimism/optimism/op-proposer/flags"
 	opservice "github.com/ethereum-optimism/optimism/op-service"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"

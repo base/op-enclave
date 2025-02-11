@@ -6,7 +6,7 @@ This utility can be used to register an op-enclave signer key with the
 ## Installation
 
 ```
-go install github.com/base-org/op-enclave/register-signer
+go install github.com/base/op-enclave/register-signer
 ```
 
 ## Usage

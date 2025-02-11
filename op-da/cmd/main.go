@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/base-org/op-enclave/op-da/da"
-	"github.com/base-org/op-enclave/op-da/flags"
+	"github.com/base/op-enclave/op-da/da"
+	"github.com/base/op-enclave/op-da/flags"
 	"github.com/ethereum-optimism/optimism/op-service/ctxinterrupt"
 
 	"github.com/urfave/cli/v2"

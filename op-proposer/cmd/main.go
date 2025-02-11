@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/base-org/op-enclave/op-proposer/flags"
-	"github.com/base-org/op-enclave/op-proposer/proposer"
+	"github.com/base/op-enclave/op-proposer/flags"
+	"github.com/base/op-enclave/op-proposer/proposer"
 	opservice "github.com/ethereum-optimism/optimism/op-service"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
 	"github.com/ethereum-optimism/optimism/op-service/ctxinterrupt"

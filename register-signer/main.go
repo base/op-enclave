@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/base-org/op-enclave/bindings"
-	"github.com/base-org/op-enclave/op-withdrawer/withdrawals"
+	"github.com/base/op-enclave/bindings"
+	"github.com/base/op-enclave/op-withdrawer/withdrawals"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

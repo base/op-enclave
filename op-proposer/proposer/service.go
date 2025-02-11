@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/base-org/op-enclave/op-enclave/enclave"
-	"github.com/base-org/op-enclave/op-proposer/metrics"
+	"github.com/base/op-enclave/op-enclave/enclave"
+	"github.com/base/op-enclave/op-proposer/metrics"
 	"github.com/ethereum-optimism/optimism/op-proposer/proposer/rpc"
 	opservice "github.com/ethereum-optimism/optimism/op-service"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"

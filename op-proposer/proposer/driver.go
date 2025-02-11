@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/base-org/op-enclave/bindings"
-	"github.com/base-org/op-enclave/op-enclave/enclave"
+	"github.com/base/op-enclave/bindings"
+	"github.com/base/op-enclave/op-enclave/enclave"
 	"github.com/ethereum-optimism/optimism/op-proposer/metrics"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum-optimism/optimism/op-service/txmgr"

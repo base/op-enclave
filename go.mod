@@ -1,10 +1,10 @@
-module github.com/base-org/op-enclave
+module github.com/base/op-enclave
 
 go 1.22.6
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/base-org/op-enclave/op-enclave v0.0.0
+	github.com/base/op-enclave/op-enclave v0.0.0
 	github.com/ethereum-optimism/optimism v1.10.1-0.20250106160657-d1ccc976f7c4
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/hashicorp/go-multierror v1.1.1
@@ -112,6 +112,6 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/base-org/op-enclave/op-enclave => ./op-enclave
+replace github.com/base/op-enclave/op-enclave => ./op-enclave
 
 replace github.com/ethereum/go-ethereum => github.com/ethereum-optimism/op-geth v1.101411.5-rc.1.0.20241219170731-928070c7fc09

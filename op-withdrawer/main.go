@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/base-org/op-enclave/bindings"
-	"github.com/base-org/op-enclave/op-withdrawer/withdrawals"
+	"github.com/base/op-enclave/bindings"
+	"github.com/base/op-enclave/op-withdrawer/withdrawals"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/ctxinterrupt"
 	oplog "github.com/ethereum-optimism/optimism/op-service/log"

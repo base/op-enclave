@@ -1,4 +1,4 @@
-module github.com/base-org/op-enclave/op-enclave
+module github.com/base/op-enclave/op-enclave
 
 go 1.22.6
 

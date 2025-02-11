@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/base-org/op-enclave/bindings"
-	"github.com/base-org/op-enclave/op-withdrawer/withdrawals"
+	"github.com/base/op-enclave/bindings"
+	"github.com/base/op-enclave/op-withdrawer/withdrawals"
 	bindings2 "github.com/ethereum-optimism/optimism/op-e2e/bindings"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/predeploys"

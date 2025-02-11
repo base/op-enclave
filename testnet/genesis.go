@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/base-org/op-enclave/bindings"
-	"github.com/base-org/op-enclave/op-enclave/enclave"
+	"github.com/base/op-enclave/bindings"
+	"github.com/base/op-enclave/op-enclave/enclave"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/foundry"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis"
