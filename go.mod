@@ -9,7 +9,6 @@ require (
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hf/nitrite v0.0.0-20211104000856-f9e0dcc73703
-	github.com/holiman/uint256 v1.3.2
 	github.com/prometheus/client_golang v1.20.5
 	github.com/urfave/cli/v2 v2.27.5
 )
@@ -62,6 +61,7 @@ require (
 	github.com/hf/nsm v0.0.0-20220930140112-cd181bd646b9 // indirect
 	github.com/holiman/billy v0.0.0-20240216141850-2abb0c79d3c4 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
+	github.com/holiman/uint256 v1.3.2 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
