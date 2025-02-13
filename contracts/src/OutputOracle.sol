@@ -169,7 +169,7 @@ contract OutputOracle is Initializable, ISemver {
         // Make sure an output for this block number has actually been proposed.
         require(
             _l2BlockNumber <= latestBlockNumber(),
-            "L2OutputOracle: cannot get output for a block that has not been proposed"
+            "OutputOracle: cannot get output for a block that has not been proposed"
         );
 
         // Find the output via binary search, guaranteed to exist.
