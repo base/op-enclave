@@ -35,7 +35,7 @@ func NewProver(
 	l1 L1Client,
 	l2 L2Client,
 	rollup RollupClient,
-	enclav enclave.RPC,
+	enclave enclave.RPC,
 ) (*Prover, error) {
 	rollupConfig, err := rollup.RollupConfig(ctx)
 	if err != nil {
@@ -48,7 +48,7 @@ func NewProver(
 		configHash: cfg.Hash(),
 		l1:         l1,
 		l2:         l2,
-		enclave:    enclav,
+		enclave:    enclave,
 	}, nil
 }
 
