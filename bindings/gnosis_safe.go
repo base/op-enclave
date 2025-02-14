@@ -1132,7 +1132,7 @@ func (it *GnosisSafeAddedOwnerIterator) Close() error {
 	return nil
 }
 
-// GnosisSafeAddedOwner represents a AddedOwner event raised by the GnosisSafe contract.
+// GnosisSafeAddedOwner represents an AddedOwner event raised by the GnosisSafe contract.
 type GnosisSafeAddedOwner struct {
 	Owner common.Address
 	Raw   types.Log // Blockchain specific contextual infos
@@ -1266,7 +1266,7 @@ func (it *GnosisSafeApproveHashIterator) Close() error {
 	return nil
 }
 
-// GnosisSafeApproveHash represents a ApproveHash event raised by the GnosisSafe contract.
+// GnosisSafeApproveHash represents an ApproveHash event raised by the GnosisSafe contract.
 type GnosisSafeApproveHash struct {
 	ApprovedHash [32]byte
 	Owner        common.Address
