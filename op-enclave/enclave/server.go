@@ -272,8 +272,8 @@ func (s *Server) ExecuteStateless(
 		return nil, err
 	}
 
-	prevOutputRoot := outputRootV0(previousBlockHeader, prevMessageAccountHash)
-	outputRoot := outputRootV0(blockHeader, messageAccount.StorageHash)
+	prevOutputRoot := OutputRootV0(previousBlockHeader, prevMessageAccountHash)
+	outputRoot := OutputRootV0(blockHeader, messageAccount.StorageHash)
 	configHash := config.Hash()
 	l2BlockNumber := common.BytesToHash(blockHeader.Number.Bytes())
 
@@ -338,7 +338,7 @@ func (s *Server) Aggregate(ctx context.Context, configHash common.Hash, prevOutp
 	}, nil
 }
 
-func outputRootV0(header *types.Header, storageRoot common.Hash) common.Hash {
+func OutputRootV0(header *types.Header, storageRoot common.Hash) common.Hash {
 	hash := header.Hash()
 	var buf [128]byte
 	copy(buf[32:], header.Root[:])

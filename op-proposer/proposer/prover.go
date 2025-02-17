@@ -156,6 +156,16 @@ func (o *Prover) Generate(ctx context.Context, block *types.Block) (*Proposal, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute enclave state transition: %w", err)
 	}
+	if output.L1OriginHash != blockRef.L1Origin.Hash {
+		return nil, fmt.Errorf("output L1 origin hash does not match expected: %s != %s", output.L1OriginHash, blockRef.L1Origin.Hash)
+	}
+	if output.L2BlockNumber.ToInt().Cmp(block.Number()) != 0 {
+		return nil, fmt.Errorf("output L2 block number does not match expected: %s != %s", output.L2BlockNumber, block.Number())
+	}
+	outputRoot := enclave.OutputRootV0(block.Header(), block.Root())
+	if output.OutputRoot != outputRoot {
+		return nil, fmt.Errorf("output root does not match expected: %s != %s", output.OutputRoot, outputRoot)
+	}
 	return &Proposal{
 		Output:      output,
 		From:        blockRef,
