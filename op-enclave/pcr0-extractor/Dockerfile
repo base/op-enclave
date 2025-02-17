@@ -37,7 +37,8 @@ FROM amazonlinux:2
 RUN amazon-linux-extras enable aws-nitro-enclaves-cli && \
     yum clean metadata && \
     yum update -y && \
-    yum install -y aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel jq
+    yum install -y aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel jq && \
+    yum clean all
 
 COPY --from=op-enclave /app/bundle/rootfs/build/eif.bin /app/eif.bin
 COPY extract-pcr0.sh /extract-pcr0.sh
