@@ -5,7 +5,6 @@ This tool extracts the PCR0 measurement from an op-enclave EIF (Enclave Image Fo
 ## Prerequisites
 
 - Docker installed on your system
-- Access to the op-enclave container registry
 - [cast](https://book.getfoundry.sh/cast/) (for contract verification)
 
 ## Building and Running
