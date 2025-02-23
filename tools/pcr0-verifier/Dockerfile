@@ -41,7 +41,7 @@ RUN amazon-linux-extras enable aws-nitro-enclaves-cli && \
     yum clean all
 
 COPY --from=op-enclave /app/bundle/rootfs/build/eif.bin /app/eif.bin
-COPY extract-pcr0.sh /extract-pcr0.sh
-RUN chmod +x /extract-pcr0.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/extract-pcr0.sh"] 
+ENTRYPOINT ["/entrypoint.sh"] 
