@@ -1,6 +1,6 @@
-# PCR0 Extractor
+# PCR0 Verifier
 
-This tool extracts the PCR0 measurement from an op-enclave EIF (Enclave Image Format) file. The PCR0 measurement is a cryptographic hash that represents the initial state of the enclave, which is crucial for attestation and verification purposes.
+This tool gets the PCR0 measurement from an op-enclave EIF (Enclave Image Format) file. The PCR0 measurement is a cryptographic hash that represents the initial state of the enclave, which is crucial for attestation and verification purposes.
 
 ## Prerequisites
 
@@ -9,14 +9,14 @@ This tool extracts the PCR0 measurement from an op-enclave EIF (Enclave Image Fo
 
 ## Building and Running
 
-1. Build the PCR0 extractor container:
+1. Build the PCR0 verifier container:
 ```bash
-docker build -t pcr0-extractor .
+docker build -t pcr0-verifier .
 ```
 
 2. Run the container to extract the PCR0:
 ```bash
-docker run --rm pcr0-extractor
+docker run --rm pcr0-verifier
 ```
 
 The tool will:
@@ -48,4 +48,4 @@ The output will include both the raw PCR0 measurement and instructions for verif
 
 ## Note
 
-The PCR0 measurement is specific to the version of the op-enclave EIF being examined. The current version being used is specified in the Dockerfile as `TAG=v0.0.1-rc5`.
+The PCR0 measurement is specific to the version of the op-enclave EIF being examined. The current version being used is specified in the Dockerfile as `TAG=v0.0.1-rc5`. You can perform the same measurement on other EIF files by modifying the Dockerfile.
