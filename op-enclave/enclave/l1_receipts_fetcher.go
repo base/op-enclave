@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
@@ -17,13 +18,15 @@ type l1ReceiptsFetcher struct {
 	hash     common.Hash
 	header   *types.Header
 	receipts types.Receipts
+	cfg      *params.ChainConfig
 }
 
-func NewL1ReceiptsFetcher(hash common.Hash, header *types.Header, receipts types.Receipts) derive.L1ReceiptsFetcher {
+func NewL1ReceiptsFetcher(hash common.Hash, header *types.Header, receipts types.Receipts, cfg *params.ChainConfig) derive.L1ReceiptsFetcher {
 	return &l1ReceiptsFetcher{
 		hash:     hash,
 		header:   header,
 		receipts: receipts,
+		cfg:      cfg,
 	}
 }
 
@@ -34,6 +37,7 @@ func (l *l1ReceiptsFetcher) InfoByHash(ctx context.Context, hash common.Hash) (e
 	return headerInfo{
 		hash:   l.hash,
 		Header: l.header,
+		cfg:    l.cfg,
 	}, nil
 }
 
@@ -48,6 +52,7 @@ func (l *l1ReceiptsFetcher) FetchReceipts(ctx context.Context, blockHash common.
 type headerInfo struct {
 	hash common.Hash
 	*types.Header
+	cfg *params.ChainConfig
 }
 
 var _ eth.BlockInfo = (*headerInfo)(nil)
@@ -85,10 +90,15 @@ func (h headerInfo) BaseFee() *big.Int {
 }
 
 func (h headerInfo) BlobBaseFee() *big.Int {
-	if h.Header.ExcessBlobGas == nil {
-		return nil
-	}
-	return eip4844.CalcBlobFee(*h.Header.ExcessBlobGas)
+	return eip4844.CalcBlobFee(h.cfg, h.Header)
+}
+
+func (h headerInfo) ExcessBlobGas() *uint64 {
+	return h.Header.ExcessBlobGas
+}
+
+func (h headerInfo) WithdrawalsRoot() *common.Hash {
+	return h.Header.WithdrawalsHash
 }
 
 func (h headerInfo) ReceiptHash() common.Hash {

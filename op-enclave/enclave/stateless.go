@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/trie"
 )
@@ -79,7 +80,7 @@ func ExecuteStateless(
 		return errors.New("invalid L1 origin")
 	}
 
-	l1Fetcher := NewL1ReceiptsFetcher(l1OriginHash, l1Origin, l1Receipts)
+	l1Fetcher := NewL1ReceiptsFetcher(l1OriginHash, l1Origin, l1Receipts, config)
 	l2Fetcher := NewL2SystemConfigFetcher(rollupConfig, previousBlockHash, previousBlockHeader, previousTxs)
 	attributeBuilder := derive.NewFetchingAttributesBuilder(rollupConfig, l1Fetcher, l2Fetcher)
 	payload, err := attributeBuilder.PreparePayloadAttributes(ctx, l2Parent, eth.BlockID{
@@ -116,7 +117,7 @@ func ExecuteStateless(
 	block := types.NewBlockWithHeader(blockHeader).WithBody(types.Body{
 		Transactions: txs,
 	})
-	blockHeader.Root, blockHeader.ReceiptHash, err = core.ExecuteStateless(config, block, witness)
+	blockHeader.Root, blockHeader.ReceiptHash, err = core.ExecuteStateless(config, vm.Config{}, block, witness)
 	if err != nil {
 		return fmt.Errorf("failed to execute stateless: %w", err)
 	}

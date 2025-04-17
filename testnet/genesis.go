@@ -22,6 +22,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-deployer/pkg/deployer/opcm"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
 	"github.com/ethereum-optimism/optimism/op-service/ctxinterrupt"
+	"github.com/ethereum-optimism/optimism/op-service/eth"
 	oplog "github.com/ethereum-optimism/optimism/op-service/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -327,7 +328,15 @@ func Main(cliCtx *cli.Context) error {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	l2Genesis, err := genesis.NewL2Genesis(&config, l1Header)
+	// Convert header to BlockRef
+	l1BlockRef := eth.L1BlockRef{
+		Hash:       l1Header.Hash(),
+		Number:     l1Header.Number.Uint64(),
+		ParentHash: l1Header.ParentHash,
+		Time:       l1Header.Time,
+	}
+
+	l2Genesis, err := genesis.NewL2Genesis(&config, &l1BlockRef)
 	if err != nil {
 		return fmt.Errorf("failed to create L2 genesis: %w", err)
 	}
@@ -379,7 +388,7 @@ func Main(cliCtx *cli.Context) error {
 		return fmt.Errorf("failed to write genesis: %w", err)
 	}
 
-	rollupConfig, err := config.RollupConfig(l1Header, genesisBlock.Hash(), 0)
+	rollupConfig, err := config.RollupConfig(&l1BlockRef, genesisBlock.Hash(), 0)
 	if err != nil {
 		return fmt.Errorf("failed to create rollup config: %w", err)
 	}

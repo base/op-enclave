@@ -46,14 +46,23 @@ func newChainConfigTemplate(cfg *genesis.DeployConfig) (params.ChainConfig, roll
 		Time:   1,
 		Number: big.NewInt(0),
 	}
-	g, err := genesis.NewL2Genesis(cfg, l1StartHeader)
+
+	// Convert header to BlockRef
+	l1BlockRef := eth.L1BlockRef{
+		Hash:       l1StartHeader.Hash(),
+		Number:     l1StartHeader.Number.Uint64(),
+		ParentHash: l1StartHeader.ParentHash,
+		Time:       l1StartHeader.Time,
+	}
+
+	g, err := genesis.NewL2Genesis(cfg, &l1BlockRef)
 	if err != nil {
 		return params.ChainConfig{}, rollup.Config{}, err
 	}
 
 	cfg.OptimismPortalProxy = common.Address{1}
 	cfg.SystemConfigProxy = common.Address{1}
-	rollupConfig, err := cfg.RollupConfig(l1StartHeader, common.Hash{}, 0)
+	rollupConfig, err := cfg.RollupConfig(&l1BlockRef, common.Hash{}, 0)
 	if err != nil {
 		return params.ChainConfig{}, rollup.Config{}, err
 	}

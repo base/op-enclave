@@ -31,6 +31,9 @@ type Metrics struct {
 	L1Cache      *opmetrics.CacheMetrics
 	L2Cache      *opmetrics.CacheMetrics
 	WitnessCache *opmetrics.CacheMetrics
+
+	// L2OutputProposals tracks the number of L2 output proposals
+	L2OutputProposals prometheus.Counter
 }
 
 var _ pmetrics.Metricer = (*Metrics)(nil)
@@ -69,6 +72,12 @@ func NewMetrics(procName string) *Metrics {
 		L1Cache:      opmetrics.NewCacheMetrics(factory, ns, "l1_cache", "L1 cache"),
 		L2Cache:      opmetrics.NewCacheMetrics(factory, ns, "l2_cache", "L2 cache"),
 		WitnessCache: opmetrics.NewCacheMetrics(factory, ns, "witness_cache", "Witness cache"),
+
+		L2OutputProposals: factory.NewCounter(prometheus.CounterOpts{
+			Namespace: ns,
+			Name:      "l2_output_proposals",
+			Help:      "Number of L2 output proposals",
+		}),
 	}
 }
 
@@ -95,6 +104,11 @@ func (m *Metrics) RecordUp() {
 // RecordL2BlocksProposed should be called when new L2 block is proposed
 func (m *Metrics) RecordL2BlocksProposed(l2ref eth.L2BlockRef) {
 	m.RecordL2Ref(pmetrics.BlockProposed, l2ref)
+}
+
+// RecordL2Proposal records metrics related to L2 output proposals with the given L2 block number
+func (m *Metrics) RecordL2Proposal(l2BlockNumber uint64) {
+	m.L2OutputProposals.Inc()
 }
 
 func (m *Metrics) Document() []opmetrics.DocumentedMetric {
