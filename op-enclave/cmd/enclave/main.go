@@ -17,20 +17,26 @@ func main() {
 	serv, err := enclave2.NewServer()
 	if err != nil {
 		log.Crit("Error creating API server", "error", err)
+		return
 	}
+
 	err = s.RegisterName(enclave2.Namespace, serv)
 	if err != nil {
 		log.Crit("Error registering API", "error", err)
+		return
 	}
 
 	listener, err := vsock.Listen(1234, &vsock.Config{})
 	if err != nil {
 		log.Warn("Error opening vsock listener, running in HTTP mode", "error", err)
 		err = http.ListenAndServe(":1234", s)
+		if err != nil {
+			log.Crit("Error starting HTTP server", "error", err)
+		}
 	} else {
 		err = s.ServeListener(listener)
-	}
-	if err != nil {
-		log.Crit("Error starting server", "error", err)
+		if err != nil {
+			log.Crit("Error starting server", "error", err)
+		}
 	}
 }
