@@ -1,0 +1,65 @@
+name: CI Workflow
+
+on:
+  pull_request:
+    branches:
+      - 'release/**'
+      - develop
+
+jobs:
+  op-batcher-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: op-batcher
+          version: v1.63.4
+          args: -E goimports,sqlclosecheck,bodyclose,asciicheck,misspell,errorlint --timeout 15m -e "errors.As" -e "errors.Is"
+
+  op-proposer-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: op-proposer
+          version: v1.63.4
+          args: -E goimports,sqlclosecheck,bodyclose,asciicheck,misspell,errorlint --timeout 15m -e "errors.As" -e "errors.Is"
+
+  op-enclave-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: op-enclave
+          version: v1.63.4
+          args: -E goimports,sqlclosecheck,bodyclose,asciicheck,misspell,errorlint --timeout 15m -e "errors.As" -e "errors.Is"
