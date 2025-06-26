@@ -1,7 +1,7 @@
 # Signer registration utility
 
 This utility can be used to register an op-enclave signer key with the
-[SystemConfigGlobal](../contracts/src/SystemConfigGlobal.sol) contract.
+[SystemConfigGlobal](../../contracts/src/SystemConfigGlobal.sol) contract.
 
 ## Installation
 
