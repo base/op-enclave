@@ -2,6 +2,7 @@ package proposer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/base/op-enclave/op-enclave/enclave"
@@ -178,7 +179,7 @@ func (o *Prover) Generate(ctx context.Context, block *types.Block) (*Proposal, e
 
 func (o *Prover) Aggregate(ctx context.Context, prevOutputRoot common.Hash, proposals []*Proposal) (*Proposal, error) {
 	if len(proposals) == 0 {
-		return nil, fmt.Errorf("no proposals to aggregate")
+		return nil, errors.New("no proposals to aggregate")
 	}
 	if len(proposals) == 1 {
 		return proposals[0], nil

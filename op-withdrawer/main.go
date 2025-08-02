@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -99,7 +100,7 @@ func Main(cliCtx *cli.Context) error {
 
 	withdrawalTxHash := common.HexToHash(cliCtx.Args().First())
 	if (withdrawalTxHash == common.Hash{}) {
-		return fmt.Errorf("invalid withdrawal transaction hash")
+		return errors.New("invalid withdrawal transaction hash")
 	}
 
 	ctx := context.Background()
@@ -187,7 +188,7 @@ func DepositHash(cliCtx *cli.Context) error {
 
 	depositTxHash := common.HexToHash(cliCtx.Args().First())
 	if (depositTxHash == common.Hash{}) {
-		return fmt.Errorf("invalid deposit transaction hash")
+		return errors.New("invalid deposit transaction hash")
 	}
 
 	receipt, err := l1.TransactionReceipt(ctx, depositTxHash)
@@ -200,7 +201,7 @@ func DepositHash(cliCtx *cli.Context) error {
 		return err
 	}
 	if len(deposits) == 0 {
-		return fmt.Errorf("no deposits found")
+		return errors.New("no deposits found")
 	}
 
 	// a single tx can contain multiple deposits; print them all
