@@ -27,7 +27,6 @@ func (e *rethClient) ExecutionWitness(ctx context.Context, hash common.Hash) (*s
 	}
 
 	var witness stateless.ExecutionWitness
-	// TODO it would be nice if reth accepted a tx hash parameter here
 	if err := e.client.Client().CallContext(ctx, &witness, "debug_executionWitness", "0x"+header.Number.Text(16)); err != nil {
 		return nil, err
 	}
