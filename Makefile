@@ -63,4 +63,3 @@ testnet: guard-L1_URL guard-DEPLOY_PRIVATE_KEY
 verify:
 	@$(call verify,"contracts/broadcast/DeployCertManager.s.sol/84532/run-1736384133.json","0.8.24")
 	@$(call verify,"contracts/broadcast/DeploySystem.s.sol/84532/run-1736385859.json","0.8.15")
-	#@$(call verify,"contracts/broadcast/DeployDeployChain.s.sol/84532/run-1733884066.json","0.8.15")
