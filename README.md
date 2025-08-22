@@ -1,3 +1,6 @@
+[![Release](https://img.shields.io/github/v/release/base/op-enclave)](https://github.com/base/op-enclave/releases)
+[![Build](https://github.com/base/op-enclave/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/base/op-enclave/actions/workflows/github-code-scanning/codeql)
+
 # op-enclave
 
 `op-enclave` is a relatively small modification to the [op-stack](https://github.com/ethereum-optimism/optimism/)
