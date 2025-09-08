@@ -127,7 +127,7 @@ func Main(cliCtx *cli.Context) error {
 		return err
 	}
 
-	receipt, err := withdrawals.WaitForReceipt(ctx, l2, withdrawalTxHash, 1*time.Second)
+	receipt, err := withdrawals.WaitForReceipt(ctx, l2, withdrawalTxHash, defaultPollInterval)
 	if err != nil {
 		return err
 	}
@@ -144,8 +144,10 @@ func Main(cliCtx *cli.Context) error {
 	return nil
 }
 
+const defaultPollInterval = 1 * time.Second
+
 func ProveWithdrawal(ctx context.Context, l1, l2 *ethclient.Client, l2g *gethclient.Client, opts *bind.TransactOpts, portal *bindings.Portal, withdrawalTxHash common.Hash, withdrawalTxBlock *big.Int) ([]*types.Receipt, error) {
-	pollInterval := 1 * time.Second
+	pollInterval := defaultPollInterval
 
 	outputOracleAddress, err := portal.L2Oracle(&bind.CallOpts{})
 	if err != nil {
