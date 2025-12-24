@@ -261,7 +261,7 @@ func (ps *ProposerService) initRPCServer(cfg *CLIConfig) error {
 }
 
 // Start runs once upon start of the proposer lifecycle,
-// and starts L2Output-submission work if the proposer is configured to start submit data on startup.
+// and starts L2Output-submission work if the proposer is configured to start submitting data on startup.
 func (ps *ProposerService) Start(_ context.Context) error {
 	ps.Log.Info("Starting Proposer")
 	return ps.driver.StartL2OutputSubmitting()
