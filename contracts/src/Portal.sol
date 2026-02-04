@@ -90,16 +90,33 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @param success        Whether the withdrawal transaction was successful.
     event WithdrawalFinalized(bytes32 indexed withdrawalHash, bool success);
 
+    /// @notice Emitted when an emergency withdrawal is executed.
+    /// @param recipient The address that received the funds.
+    /// @param token The token address (Constants.ETHER for native ETH).
+    /// @param amount The amount withdrawn.
+    event EmergencyWithdrawal(address indexed recipient, address indexed token, uint256 amount);
+
     /// @notice Reverts when paused.
     modifier whenNotPaused() {
         if (paused()) revert CallPaused();
         _;
     }
 
+    /// @notice Reverts if caller is not the proxy admin.
+    modifier onlyAdmin() {
+        address admin;
+        bytes32 adminSlot = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+        assembly {
+            admin := sload(adminSlot)
+        }
+        require(msg.sender == admin, "Portal: caller is not admin");
+        _;
+    }
+
     /// @notice Semantic version.
-    /// @custom:semver 1.0.0
+    /// @custom:semver 1.1.0
     function version() public pure virtual returns (string memory) {
-        return "1.0.0";
+        return "1.1.0";
     }
 
     /// @notice Constructs the OptimismPortal contract.
@@ -489,6 +506,33 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         );
     }
 
+    /// @notice Emergency function to withdraw all tokens held by the portal.
+    ///         This is intended for fund recovery in emergency situations.
+    ///         Can be called regardless of pause state.
+    /// @param _recipient The address to receive the withdrawn funds.
+    function emergencyWithdraw(address _recipient) external onlyAdmin {
+        require(_recipient != address(0), "Portal: zero recipient");
+
+        (address token,) = gasPayingToken();
+        uint256 amount;
+
+        if (token == Constants.ETHER) {
+            amount = address(this).balance;
+            if (amount > 0) {
+                (bool success,) = _recipient.call{value: amount}("");
+                require(success, "Portal: ETH transfer failed");
+            }
+        } else {
+            amount = IERC20(token).balanceOf(address(this));
+            if (amount > 0) {
+                _balance = 0;
+                IERC20(token).safeTransfer(_recipient, amount);
+            }
+        }
+
+        emit EmergencyWithdrawal(_recipient, token, amount);
+    }
+
     /// @notice Determine if a given output is finalized.
     ///         Reverts if the call to l2Oracle.getL2Output reverts.
     ///         Returns a boolean otherwise.
@@ -505,4 +549,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     function _isFinalizationPeriodElapsed(uint256 _timestamp) internal view returns (bool) {
         return block.timestamp > _timestamp;
     }
+
+    /// @dev Reserved storage for future upgrades.
+    uint256[44] private __gap;
 }
