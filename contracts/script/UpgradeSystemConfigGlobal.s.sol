@@ -22,7 +22,8 @@ contract UpgradeSystemConfigGlobal is Script, Artifacts {
         address addr_ = address(new SystemConfigGlobal{salt: _implSalt()}(ICertManager(mustGetAddress("CertManager"))));
         bytes memory data =
             abi.encodeCall(ProxyAdmin.upgrade, (payable(mustGetAddress("SystemConfigGlobalProxy")), address(addr_)));
-        IGnosisSafe(mustGetAddress("SystemOwnerSafe")).execTransaction({
+        IGnosisSafe(mustGetAddress("SystemOwnerSafe"))
+            .execTransaction({
             to: mustGetAddress("ProxyAdmin"),
             value: 0,
             data: data,

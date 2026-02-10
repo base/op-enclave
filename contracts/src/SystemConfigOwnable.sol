@@ -298,12 +298,8 @@ contract SystemConfigOwnable is OwnableConfig, ISemver, IGasToken {
 
             // Set the gas paying token in storage and in the OptimismPortal.
             GasPayingToken.set({_token: _token, _decimals: GAS_PAYING_TOKEN_DECIMALS, _name: name, _symbol: symbol});
-            IOptimismPortal(payable(optimismPortal())).setGasPayingToken({
-                _token: _token,
-                _decimals: GAS_PAYING_TOKEN_DECIMALS,
-                _name: name,
-                _symbol: symbol
-            });
+            IOptimismPortal(payable(optimismPortal()))
+                .setGasPayingToken({_token: _token, _decimals: GAS_PAYING_TOKEN_DECIMALS, _name: name, _symbol: symbol});
         }
     }
 

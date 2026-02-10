@@ -383,12 +383,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         }
 
         _depositTransaction({
-            _to: _to,
-            _mint: _mint,
-            _value: _value,
-            _gasLimit: _gasLimit,
-            _isCreation: _isCreation,
-            _data: _data
+            _to: _to, _mint: _mint, _value: _value, _gasLimit: _gasLimit, _isCreation: _isCreation, _data: _data
         });
     }
 
@@ -410,12 +405,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         if (token != Constants.ETHER && msg.value != 0) revert NoValue();
 
         _depositTransaction({
-            _to: _to,
-            _mint: msg.value,
-            _value: _value,
-            _gasLimit: _gasLimit,
-            _isCreation: _isCreation,
-            _data: _data
+            _to: _to, _mint: msg.value, _value: _value, _gasLimit: _gasLimit, _isCreation: _isCreation, _data: _data
         });
     }
 
