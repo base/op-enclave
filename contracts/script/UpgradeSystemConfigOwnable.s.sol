@@ -22,7 +22,8 @@ contract UpgradeSystemConfigOwnable is Script {
 
         SystemConfigOwnable config = new SystemConfigOwnable(OwnerConfig(ownerConfig));
         bytes memory data = abi.encodeCall(ProxyAdmin.upgrade, (payable(proxy), address(config)));
-        IGnosisSafe(safe).execTransaction({
+        IGnosisSafe(safe)
+            .execTransaction({
             to: admin,
             value: 0,
             data: data,

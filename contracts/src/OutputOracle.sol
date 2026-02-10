@@ -82,9 +82,7 @@ contract OutputOracle is Initializable, ISemver {
         configHash = _configHash;
         l2Outputs.push(
             Types.OutputProposal({
-                outputRoot: _genesisOutputRoot,
-                timestamp: uint128(block.timestamp),
-                l2BlockNumber: uint128(0)
+                outputRoot: _genesisOutputRoot, timestamp: uint128(block.timestamp), l2BlockNumber: uint128(0)
             })
         );
         proofsEnabled = _proofsEnabled;
@@ -136,9 +134,7 @@ contract OutputOracle is Initializable, ISemver {
         emit OutputProposed(_outputRoot, latestOutputIndex, _l2BlockNumber, block.timestamp);
 
         Types.OutputProposal memory op = Types.OutputProposal({
-            outputRoot: _outputRoot,
-            timestamp: uint128(block.timestamp),
-            l2BlockNumber: uint128(_l2BlockNumber)
+            outputRoot: _outputRoot, timestamp: uint128(block.timestamp), l2BlockNumber: uint128(_l2BlockNumber)
         });
         if (l2Outputs.length < maxOutputCount) {
             l2Outputs.push(op);

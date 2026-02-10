@@ -223,19 +223,22 @@ contract DeployChain is Ownable {
         DeployAddresses memory addresses,
         bool proofsEnabled
     ) internal {
-        OutputOracle(addresses.l2OutputOracle).initialize(
-            SystemConfigOwnable(addresses.systemConfig), hashes.configHash, hashes.genesisOutputRoot, proofsEnabled
-        );
+        OutputOracle(addresses.l2OutputOracle)
+            .initialize(
+                SystemConfigOwnable(addresses.systemConfig), hashes.configHash, hashes.genesisOutputRoot, proofsEnabled
+            );
 
-        Portal(payable(addresses.optimismPortal)).initialize(
-            OutputOracle(addresses.l2OutputOracle),
-            ISystemConfig(addresses.systemConfig),
-            ISuperchainConfig(superchainConfig)
-        );
+        Portal(payable(addresses.optimismPortal))
+            .initialize(
+                OutputOracle(addresses.l2OutputOracle),
+                ISystemConfig(addresses.systemConfig),
+                ISuperchainConfig(superchainConfig)
+            );
 
         SystemConfig.Addresses memory systemAddresses = _createSystemAddresses(addresses, gasConfig.gasToken);
 
-        SystemConfigOwnable(addresses.systemConfig).initialize({
+        SystemConfigOwnable(addresses.systemConfig)
+            .initialize({
             _basefeeScalar: gasConfig.basefeeScalar,
             _blobbasefeeScalar: gasConfig.blobbasefeeScalar,
             _batcherHash: bytes32(uint256(uint160(addressConfig.batcher))),
@@ -247,21 +250,22 @@ contract DeployChain is Ownable {
             _addresses: systemAddresses
         });
 
-        L1CrossDomainMessenger(addresses.l1CrossDomainMessenger).initialize(
-            ISuperchainConfig(superchainConfig),
-            IOptimismPortal(payable(addresses.optimismPortal)),
-            ISystemConfig(addresses.systemConfig)
-        );
+        L1CrossDomainMessenger(addresses.l1CrossDomainMessenger)
+            .initialize(
+                ISuperchainConfig(superchainConfig),
+                IOptimismPortal(payable(addresses.optimismPortal)),
+                ISystemConfig(addresses.systemConfig)
+            );
 
-        L1StandardBridge(payable(addresses.l1StandardBridge)).initialize(
-            ICrossDomainMessenger(addresses.l1CrossDomainMessenger),
-            ISuperchainConfig(superchainConfig),
-            ISystemConfig(addresses.systemConfig)
-        );
+        L1StandardBridge(payable(addresses.l1StandardBridge))
+            .initialize(
+                ICrossDomainMessenger(addresses.l1CrossDomainMessenger),
+                ISuperchainConfig(superchainConfig),
+                ISystemConfig(addresses.systemConfig)
+            );
 
-        L1ERC721Bridge(addresses.l1ERC721Bridge).initialize(
-            ICrossDomainMessenger(addresses.l1CrossDomainMessenger), ISuperchainConfig(superchainConfig)
-        );
+        L1ERC721Bridge(addresses.l1ERC721Bridge)
+            .initialize(ICrossDomainMessenger(addresses.l1CrossDomainMessenger), ISuperchainConfig(superchainConfig));
 
         OptimismMintableERC20Factory(addresses.optimismMintableERC20Factory).initialize(addresses.l1StandardBridge);
     }

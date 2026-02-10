@@ -58,7 +58,8 @@ contract SystemConfigGlobal is OwnableManagedUpgradeable, ISemver, NitroValidato
         bytes32 pcr0 = attestationTbs.keccak(ptrs.pcrs[0]);
         require(validPCR0s[pcr0], "invalid pcr0 in attestation");
 
-        require(ptrs.timestamp + MAX_AGE > block.timestamp, "attestation too old");
+        uint64 timestampSeconds = ptrs.timestamp / 1000;
+        require(timestampSeconds + MAX_AGE > block.timestamp, "attestation too old");
 
         // The publicKey is encoded in the form specified in section 4.3.6 of ANSI X9.62, which is a
         // 0x04 byte followed by the x and y coordinates of the public key. We ignore the first byte.
