@@ -19,3 +19,7 @@ fs_permissions = [
     { access='read', path='./test/nitro-attestation/' },
     { access='read-write', path='./deployments/' },
 ]
+
+# workaround for https://github.com/foundry-rs/foundry/issues/11668
+[lint]
+lint_on_build = false
