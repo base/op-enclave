@@ -1,5 +1,5 @@
-[![Release](https://img.shields.io/github/v/release/base/op-enclave)](https://github.com/base/op-enclave/releases)
-[![Build](https://github.com/base/op-enclave/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/base/op-enclave/actions/workflows/github-code-scanning/codeql)
+[![Release](https://img.shields.io/github/v/release/AdekunleBamz/op-enclave)](https://github.com/AdekunleBamz/op-enclave/releases)
+[![CI](https://github.com/AdekunleBamz/op-enclave/actions/workflows/test.yml/badge.svg)](https://github.com/AdekunleBamz/op-enclave/actions/workflows/test.yml)
 
 # op-enclave
 

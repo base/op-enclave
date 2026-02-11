@@ -44,3 +44,25 @@ jobs:
           cd contracts
           forge test -vvv
         id: test
+
+  go:
+    name: Go tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run go vet
+        run: |
+          go vet ./...
+
+      - name: Run go test
+        run: |
+          go test ./...
