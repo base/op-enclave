@@ -506,16 +506,28 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         );
     }
 
-    /// @notice Emergency function to withdraw all tokens held by the portal.
-    ///         This is intended for fund recovery in emergency situations.
+    /// @notice Allows owner to withdraw the gas paying token held by the portal.
     ///         Can be called regardless of pause state.
     /// @param _recipient The address to receive the withdrawn funds.
-    function emergencyWithdraw(address _recipient) external onlyAdmin {
+    function chainOwnerExitPortal(address _recipient) external onlyAdmin {
+        chainOwnerExitPortal(address(0), _recipient);
+    }
+
+    /// @notice Allows owner to withdraw all tokens held by the portal.
+    ///         Can be called regardless of pause state.
+    /// @param _asset The token address to withdraw, or address(0) for the gas paying token.
+    /// @param _recipient The address to receive the withdrawn funds.
+    function chainOwnerExitPortal(address _asset, address _recipient) public onlyAdmin {
         require(_recipient != address(0), "Portal: zero recipient");
 
-        (address token,) = gasPayingToken();
-        uint256 amount;
+        address token;
+        if (_asset != address(0)) {
+            token = _asset;
+        } else {
+            (token,) = gasPayingToken();
+        }
 
+        uint256 amount;
         if (token == Constants.ETHER) {
             amount = address(this).balance;
             if (amount > 0) {
@@ -525,7 +537,10 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         } else {
             amount = IERC20(token).balanceOf(address(this));
             if (amount > 0) {
-                _balance = 0;
+                (address gasToken,) = gasPayingToken();
+                if (token == gasToken) {
+                    _balance = 0;
+                }
                 IERC20(token).safeTransfer(_recipient, amount);
             }
         }
@@ -549,7 +564,3 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     function _isFinalizationPeriodElapsed(uint256 _timestamp) internal view returns (bool) {
         return block.timestamp > _timestamp;
     }
-
-    /// @dev Reserved storage for future upgrades.
-    uint256[44] private __gap;
-}
