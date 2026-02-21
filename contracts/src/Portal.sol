@@ -564,3 +564,4 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     function _isFinalizationPeriodElapsed(uint256 _timestamp) internal view returns (bool) {
         return block.timestamp > _timestamp;
     }
+}

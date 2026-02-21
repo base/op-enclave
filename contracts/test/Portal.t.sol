@@ -134,7 +134,7 @@ contract PortalTest is Test {
         });
     }
 
-    function test_emergencyWithdraw_ETH_success() public {
+    function test_chainOwnerExitPortal_ETH_success() public {
         // Fund the portal with ETH
         uint256 amount = 10 ether;
         vm.deal(address(portal), amount);
@@ -145,13 +145,13 @@ contract PortalTest is Test {
         // But the actual proxy admin is the ProxyAdmin contract, so we need to call from it
         // Actually, the admin slot stores the ProxyAdmin address, so we need to prank as ProxyAdmin
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
 
         assertEq(address(portal).balance, 0);
         assertEq(recipient.balance, recipientBalanceBefore + amount);
     }
 
-    function test_emergencyWithdraw_ERC20_success() public {
+    function test_chainOwnerExitPortal_ERC20_success() public {
         // Set up custom gas token
         systemConfig.setGasPayingToken(address(token));
 
@@ -163,33 +163,33 @@ contract PortalTest is Test {
 
         // Admin withdraws
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
 
         assertEq(token.balanceOf(address(portal)), 0);
         assertEq(token.balanceOf(recipient), recipientBalanceBefore + amount);
     }
 
-    function test_emergencyWithdraw_onlyAdmin_reverts() public {
+    function test_chainOwnerExitPortal_onlyAdmin_reverts() public {
         // Fund the portal
         vm.deal(address(portal), 10 ether);
 
         // Non-admin tries to withdraw
         vm.prank(nonAdmin);
         vm.expectRevert("Portal: caller is not admin");
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
     }
 
-    function test_emergencyWithdraw_zeroRecipient_reverts() public {
+    function test_chainOwnerExitPortal_zeroRecipient_reverts() public {
         // Fund the portal
         vm.deal(address(portal), 10 ether);
 
         // Admin tries to withdraw to zero address
         vm.prank(address(admin));
         vm.expectRevert("Portal: zero recipient");
-        portal.emergencyWithdraw(address(0));
+        portal.chainOwnerExitPortal(address(0));
     }
 
-    function test_emergencyWithdraw_worksWhenPaused() public {
+    function test_chainOwnerExitPortal_worksWhenPaused() public {
         // Fund the portal
         uint256 amount = 10 ether;
         vm.deal(address(portal), amount);
@@ -202,13 +202,13 @@ contract PortalTest is Test {
 
         // Admin can still withdraw even when paused
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
 
         assertEq(address(portal).balance, 0);
         assertEq(recipient.balance, recipientBalanceBefore + amount);
     }
 
-    function test_emergencyWithdraw_emitsEvent() public {
+    function test_chainOwnerExitPortal_emitsEvent() public {
         // Fund the portal
         uint256 amount = 10 ether;
         vm.deal(address(portal), amount);
@@ -218,10 +218,10 @@ contract PortalTest is Test {
         emit EmergencyWithdrawal(recipient, Constants.ETHER, amount);
 
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
     }
 
-    function test_emergencyWithdraw_emitsEvent_ERC20() public {
+    function test_chainOwnerExitPortal_emitsEvent_ERC20() public {
         // Set up custom gas token
         systemConfig.setGasPayingToken(address(token));
 
@@ -234,10 +234,10 @@ contract PortalTest is Test {
         emit EmergencyWithdrawal(recipient, address(token), amount);
 
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
     }
 
-    function test_emergencyWithdraw_zeroBalance_ETH() public {
+    function test_chainOwnerExitPortal_zeroBalance_ETH() public {
         // Portal has no ETH
         assertEq(address(portal).balance, 0);
 
@@ -248,12 +248,12 @@ contract PortalTest is Test {
         emit EmergencyWithdrawal(recipient, Constants.ETHER, 0);
 
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
 
         assertEq(recipient.balance, recipientBalanceBefore);
     }
 
-    function test_emergencyWithdraw_zeroBalance_ERC20() public {
+    function test_chainOwnerExitPortal_zeroBalance_ERC20() public {
         // Set up custom gas token
         systemConfig.setGasPayingToken(address(token));
 
@@ -267,7 +267,7 @@ contract PortalTest is Test {
         emit EmergencyWithdrawal(recipient, address(token), 0);
 
         vm.prank(address(admin));
-        portal.emergencyWithdraw(recipient);
+        portal.chainOwnerExitPortal(recipient);
 
         assertEq(token.balanceOf(recipient), recipientBalanceBefore);
     }
