@@ -90,11 +90,11 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @param success        Whether the withdrawal transaction was successful.
     event WithdrawalFinalized(bytes32 indexed withdrawalHash, bool success);
 
-    /// @notice Emitted when an emergency withdrawal is executed.
+    /// @notice Emitted when the chain owner executes a withdrawal.
     /// @param recipient The address that received the funds.
     /// @param token The token address (Constants.ETHER for native ETH).
     /// @param amount The amount withdrawn.
-    event EmergencyWithdrawal(address indexed recipient, address indexed token, uint256 amount);
+    event ChainOwnerExitWithdrawal(address indexed recipient, address indexed token, uint256 amount);
 
     /// @notice Reverts when paused.
     modifier whenNotPaused() {
@@ -509,7 +509,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @notice Allows owner to withdraw the gas paying token held by the portal.
     ///         Can be called regardless of pause state.
     /// @param _recipient The address to receive the withdrawn funds.
-    function chainOwnerExitPortal(address _recipient) external onlyAdmin {
+    function chainOwnerExitPortalNetworkToken(address _recipient) external onlyAdmin {
         chainOwnerExitPortal(address(0), _recipient);
     }
 
@@ -545,7 +545,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
             }
         }
 
-        emit EmergencyWithdrawal(_recipient, token, amount);
+        emit ChainOwnerExitWithdrawal(recipient, token, amount);
     }
 
     /// @notice Determine if a given output is finalized.
