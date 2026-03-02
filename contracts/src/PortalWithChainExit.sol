@@ -31,7 +31,7 @@ import {ISemver} from "@eth-optimism-bedrock/src/universal/interfaces/ISemver.so
 /// @notice The OptimismPortal is a low-level contract responsible for passing messages between L1
 ///         and L2. Messages sent directly to the OptimismPortal have no form of replayability.
 ///         Users are encouraged to use the L1CrossDomainMessenger for a higher-level interface.
-contract Portal is Initializable, ResourceMetering, ISemver {
+contract PortalWithChainExit is Initializable, ResourceMetering, ISemver {
     /// @notice Allows for interactions with non standard ERC20 tokens.
     using SafeERC20 for IERC20;
 
@@ -70,6 +70,10 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     ///         It is not safe to trust `ERC20.balanceOf` as it may lie.
     uint256 internal _balance;
 
+    // Owner of the current chain 
+    address public chainOwner;
+
+
     /// @notice Emitted when a transaction is deposited from L1 to L2.
     ///         The parameters of this event are read by the rollup node and used to derive deposit
     ///         transactions on L2.
@@ -90,16 +94,42 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     /// @param success        Whether the withdrawal transaction was successful.
     event WithdrawalFinalized(bytes32 indexed withdrawalHash, bool success);
 
+    /// @notice Emitted when a chain owner is set
+    /// @param chainOwner address of the chain owner
+    event ChainOwnerSet(address chainOwner);
+
+    /// @notice Emitted when the chain owner executes a withdrawal.
+    /// @param recipient The address that received the funds.
+    /// @param token The token address (Constants.ETHER for native ETH).
+    /// @param amount The amount withdrawn.
+    event ChainOwnerExitWithdrawal(address indexed recipient, address indexed token, uint256 amount);
+
     /// @notice Reverts when paused.
     modifier whenNotPaused() {
         if (paused()) revert CallPaused();
         _;
     }
 
+    /// @notice Reverts if caller is not the proxy admin.
+    modifier onlyAdmin() {
+        address admin;
+        bytes32 adminSlot = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+        assembly {
+            admin := sload(adminSlot)
+        }
+        require(msg.sender == admin, "Portal: caller is not admin");
+        _;
+    }
+
+    modifier onlyChainOwner() {
+        require(msg.sender == chainOwner, "Portal: caller is not chain owner");
+        _;
+    }
+
     /// @notice Semantic version.
-    /// @custom:semver 1.0.0
+    /// @custom:semver 1.1.0
     function version() public pure virtual returns (string memory) {
-        return "1.0.0";
+        return "1.1.0";
     }
 
     /// @notice Constructs the OptimismPortal contract.
@@ -383,7 +413,12 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         }
 
         _depositTransaction({
-            _to: _to, _mint: _mint, _value: _value, _gasLimit: _gasLimit, _isCreation: _isCreation, _data: _data
+            _to: _to,
+            _mint: _mint,
+            _value: _value,
+            _gasLimit: _gasLimit,
+            _isCreation: _isCreation,
+            _data: _data
         });
     }
 
@@ -405,7 +440,12 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         if (token != Constants.ETHER && msg.value != 0) revert NoValue();
 
         _depositTransaction({
-            _to: _to, _mint: msg.value, _value: _value, _gasLimit: _gasLimit, _isCreation: _isCreation, _data: _data
+            _to: _to,
+            _mint: msg.value,
+            _value: _value,
+            _gasLimit: _gasLimit,
+            _isCreation: _isCreation,
+            _data: _data
         });
     }
 
@@ -477,6 +517,53 @@ contract Portal is Initializable, ResourceMetering, ISemver {
                 abi.encodeCall(L1Block.setGasPayingToken, (_token, _decimals, _name, _symbol))
             )
         );
+    }
+
+    function setChainOwner(address _chainOwner) external onlyAdmin {
+        chainOwner = _chainOwner;
+        emit ChainOwnerSet(chainOwner);
+    }
+
+    /// @notice Allows owner to withdraw the gas paying token held by the portal.
+    ///         Can be called regardless of pause state.
+    /// @param _recipient The address to receive the withdrawn funds.
+    function chainOwnerExitPortalNetworkToken(address _recipient) external onlyChainOwner {
+        chainOwnerExitPortal(address(0), _recipient);
+    }
+
+    /// @notice Allows owner to withdraw all tokens held by the portal.
+    ///         Can be called regardless of pause state.
+    /// @param _asset The token address to withdraw, or address(0) for the gas paying token.
+    /// @param _recipient The address to receive the withdrawn funds.
+    function chainOwnerExitPortal(address _asset, address _recipient) public onlyChainOwner {
+        require(_recipient != address(0), "Portal: zero recipient");
+
+        address token;
+        if (_asset != address(0)) {
+            token = _asset;
+        } else {
+            (token,) = gasPayingToken();
+        }
+
+        uint256 amount;
+        if (token == Constants.ETHER) {
+            amount = address(this).balance;
+            if (amount > 0) {
+                (bool success,) = _recipient.call{value: amount}("");
+                require(success, "Portal: ETH transfer failed");
+            }
+        } else {
+            amount = IERC20(token).balanceOf(address(this));
+            if (amount > 0) {
+                (address gasToken,) = gasPayingToken();
+                if (token == gasToken) {
+                    _balance = 0;
+                }
+                IERC20(token).safeTransfer(_recipient, amount);
+            }
+        }
+
+        emit ChainOwnerExitWithdrawal(_recipient, token, amount);
     }
 
     /// @notice Determine if a given output is finalized.
