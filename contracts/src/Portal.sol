@@ -121,8 +121,13 @@ contract Portal is Initializable, ResourceMetering, ISemver {
         _;
     }
 
-    modifier onlyChainOwner() {
-        require(msg.sender == chainOwner, "Portal: caller is not chain owner");
+    modifier onlyChainOwnerAndAdmin() {
+        address admin;
+        bytes32 adminSlot = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+        assembly {
+            admin := sload(adminSlot)
+        }
+        require(msg.sender == chainOwner || msg.sender == admin, "Portal: caller is not chain owner or admin");
         _;
     }
 
@@ -520,14 +525,14 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     }
 
     function setChainOwner(address _chainOwner) external onlyAdmin {
-        chainOwner = _chainOwner;`
+        chainOwner = _chainOwner;
         emit ChainOwnerSet(chainOwner);
     }
 
     /// @notice Allows owner to withdraw the gas paying token held by the portal.
     ///         Can be called regardless of pause state.
     /// @param _recipient The address to receive the withdrawn funds.
-    function chainOwnerExitPortalNetworkToken(address _recipient) external onlyChainOwner {
+    function chainOwnerExitPortalNetworkToken(address _recipient) external onlyChainOwnerAndAdmin {
         chainOwnerExitPortal(address(0), _recipient);
     }
 
@@ -535,7 +540,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     ///         Can be called regardless of pause state.
     /// @param _asset The token address to withdraw, or address(0) for the gas paying token.
     /// @param _recipient The address to receive the withdrawn funds.
-    function chainOwnerExitPortal(address _asset, address _recipient) public onlyChainOwner {
+    function chainOwnerExitPortal(address _asset, address _recipient) public onlyChainOwnerAndAdmin {
         require(_recipient != address(0), "Portal: zero recipient");
 
         address token;

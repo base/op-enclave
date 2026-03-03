@@ -10,7 +10,7 @@ import {IResourceMetering} from "@eth-optimism-bedrock/src/L1/interfaces/IResour
 import {Constants} from "@eth-optimism-bedrock/src/libraries/Constants.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import {PortalWithChainExit} from "../src/PortalWithChainExit.sol";
+import {Portal} from "../src/Portal.sol";
 import {OutputOracle} from "../src/OutputOracle.sol";
 
 /// @notice Mock ERC20 token for testing
@@ -90,8 +90,8 @@ contract MockSystemConfig {
 }
 
 contract PortalTest is Test {
-    PortalWithChainExit internal portalImpl;
-    PortalWithChainExit internal portal;
+    Portal internal portalImpl;
+    Portal internal portal;
     ProxyAdmin internal admin;
     Proxy internal proxy;
     MockSuperchainConfig internal superchainConfig;
@@ -115,18 +115,18 @@ contract PortalTest is Test {
         token = new MockERC20();
 
         // Deploy Portal implementation
-        portalImpl = new PortalWithChainExit();
+        portalImpl = new Portal();
 
         // Deploy proxy with admin
         admin = new ProxyAdmin(address(this));
         proxy = new Proxy(address(admin));
 
         // Upgrade proxy to Portal implementation, setting chain owner in the same call
-        bytes memory _data = abi.encodeCall(PortalWithChainExit.setChainOwner, chainOwner);
+        bytes memory _data = abi.encodeCall(Portal.setChainOwner, chainOwner);
         admin.upgradeAndCall(payable(address(proxy)), address(portalImpl), _data);
 
         // Get Portal interface on proxy
-        portal = PortalWithChainExit(payable(address(proxy)));
+        portal = Portal(payable(address(proxy)));
 
         // Initialize portal
         portal.initialize({
@@ -174,7 +174,7 @@ contract PortalTest is Test {
 
         // Non-owner tries to withdraw
         vm.prank(nonOwner);
-        vm.expectRevert("Portal: caller is not chain owner");
+        vm.expectRevert("Portal: caller is not chain owner or admin");
         portal.chainOwnerExitPortalNetworkToken(recipient);
     }
 
@@ -263,6 +263,36 @@ contract PortalTest is Test {
         portal.chainOwnerExitPortal(address(token), recipient);
 
         assertEq(token.balanceOf(recipient), recipientBalanceBefore);
+    }
+
+    function test_adminCanCallChainOwnerExitPortalNetworkToken_ETH() public {
+        // Fund the portal with ETH
+        uint256 amount = 10 ether;
+        vm.deal(address(portal), amount);
+
+        uint256 recipientBalanceBefore = recipient.balance;
+
+        // Proxy admin (ProxyAdmin contract) calls the exit function
+        vm.prank(address(admin));
+        portal.chainOwnerExitPortalNetworkToken(recipient);
+
+        assertEq(address(portal).balance, 0);
+        assertEq(recipient.balance, recipientBalanceBefore + amount);
+    }
+
+    function test_adminCanCallChainOwnerExitPortal_ERC20() public {
+        // Fund the portal with ERC20 tokens
+        uint256 amount = 1000 ether;
+        token.mint(address(portal), amount);
+
+        uint256 recipientBalanceBefore = token.balanceOf(recipient);
+
+        // Proxy admin calls the exit function
+        vm.prank(address(admin));
+        portal.chainOwnerExitPortal(address(token), recipient);
+
+        assertEq(token.balanceOf(address(portal)), 0);
+        assertEq(token.balanceOf(recipient), recipientBalanceBefore + amount);
     }
 
     // function test_version() public view {
