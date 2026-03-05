@@ -525,6 +525,7 @@ contract Portal is Initializable, ResourceMetering, ISemver {
     }
 
     function setChainOwner(address _chainOwner) external onlyChainOwnerAndAdmin {
+        require(_chainOwner != address(0), "chain owner must not be 0 address");
         chainOwner = _chainOwner;
         emit ChainOwnerSet(chainOwner);
     }

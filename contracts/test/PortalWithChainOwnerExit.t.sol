@@ -108,6 +108,9 @@ contract PortalTest is Test {
     /// @notice Emitted when an emergency withdrawal is executed.
     event ChainOwnerExitWithdrawal(address indexed recipient, address indexed token, uint256 amount);
 
+    /// @notice Emitted when a chain owner is set.
+    event ChainOwnerSet(address chainOwner);
+
     function setUp() public {
         // Deploy mocks
         superchainConfig = new MockSuperchainConfig();
@@ -294,6 +297,84 @@ contract PortalTest is Test {
         assertEq(token.balanceOf(address(portal)), 0);
         assertEq(token.balanceOf(recipient), recipientBalanceBefore + amount);
     }
+
+    // ──────────────────────────────────────────────
+    //  setChainOwner tests
+    // ──────────────────────────────────────────────
+
+    function test_setChainOwner_adminCanSet() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.prank(address(admin));
+        portal.setChainOwner(newOwner);
+
+        assertEq(portal.chainOwner(), newOwner);
+    }
+
+    function test_setChainOwner_chainOwnerCanSet() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.prank(chainOwner);
+        portal.setChainOwner(newOwner);
+
+        assertEq(portal.chainOwner(), newOwner);
+    }
+
+    function test_setChainOwner_nonOwnerReverts() public {
+        vm.prank(nonOwner);
+        vm.expectRevert("Portal: caller is not chain owner or admin");
+        portal.setChainOwner(makeAddr("newOwner"));
+    }
+
+    function test_setChainOwner_emitsEvent() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.expectEmit(false, false, false, true);
+        emit ChainOwnerSet(newOwner);
+
+        vm.prank(chainOwner);
+        portal.setChainOwner(newOwner);
+    }
+
+    function test_setChainOwner_oldOwnerLosesAccess() public {
+        address newOwner = makeAddr("newOwner");
+
+        // Transfer ownership
+        vm.prank(chainOwner);
+        portal.setChainOwner(newOwner);
+
+        // Old chain owner can no longer call owner-restricted functions
+        vm.prank(chainOwner);
+        vm.expectRevert("Portal: caller is not chain owner or admin");
+        portal.chainOwnerExitPortalNetworkToken(recipient);
+    }
+
+    function test_setChainOwner_newOwnerHasAccess() public {
+        address newOwner = makeAddr("newOwner");
+
+        // Transfer ownership
+        vm.prank(chainOwner);
+        portal.setChainOwner(newOwner);
+
+        // Fund portal so exit has something to transfer
+        vm.deal(address(portal), 1 ether);
+
+        // New owner can call owner-restricted functions
+        vm.prank(newOwner);
+        portal.chainOwnerExitPortalNetworkToken(recipient);
+
+        assertEq(address(portal).balance, 0);
+    }
+
+    function test_setChainOwner_toZeroAddress() public {
+        vm.prank(chainOwner);
+        vm.expectRevert("chain owner must not be 0 address");
+        portal.setChainOwner(address(0));
+    }
+
+    // ──────────────────────────────────────────────
+    //  chainOwnerExit – custom gas token tests
+    // ──────────────────────────────────────────────
 
     function test_chainOwnerExitPortalNetworkToken_customGasToken_resetsBalance() public {
         // Configure the chain to use a custom gas token (not ETH)
