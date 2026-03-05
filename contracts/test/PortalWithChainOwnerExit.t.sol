@@ -295,6 +295,50 @@ contract PortalTest is Test {
         assertEq(token.balanceOf(recipient), recipientBalanceBefore + amount);
     }
 
+    function test_chainOwnerExitPortalNetworkToken_customGasToken_resetsBalance() public {
+        // Configure the chain to use a custom gas token (not ETH)
+        systemConfig.setGasPayingToken(address(token));
+
+        // Fund the portal with the custom gas token
+        uint256 amount = 1000 ether;
+        token.mint(address(portal), amount);
+
+        // Simulate _balance being set (as would happen via depositERC20Transaction).
+        // Portal storage layout (behind proxy):
+        //   slot 0:     Initializable (_initialized + _initializing, packed)
+        //   slot 1:     ResourceMetering.params (ResourceParams struct, 256 bits)
+        //   slots 2-49: ResourceMetering.__gap[48]
+        //   slot 50:    l2Sender
+        //   slot 51:    finalizedWithdrawals (mapping)
+        //   slot 52:    superchainConfig
+        //   slot 53:    l2Oracle
+        //   slot 54:    systemConfig
+        //   slot 55:    _balance
+        //   slot 56:    chainOwner
+        uint256 balanceSlot = 55;
+
+        // Confirm balance() returns 0 before we write (custom gas token path returns _balance)
+        assertEq(portal.balance(), 0);
+
+        vm.store(address(portal), bytes32(balanceSlot), bytes32(amount));
+        assertEq(portal.balance(), amount, "_balance should be set via vm.store");
+
+        uint256 recipientBalanceBefore = token.balanceOf(recipient);
+
+        // Chain owner exits with the network token (custom gas token)
+        vm.expectEmit(true, true, false, true);
+        emit ChainOwnerExitWithdrawal(recipient, address(token), amount);
+
+        vm.prank(chainOwner);
+        portal.chainOwnerExitPortalNetworkToken(recipient);
+
+        // Verify _balance was reset to 0
+        assertEq(portal.balance(), 0, "_balance should be reset to 0");
+        // Verify tokens were transferred
+        assertEq(token.balanceOf(address(portal)), 0, "portal should have no tokens");
+        assertEq(token.balanceOf(recipient), recipientBalanceBefore + amount, "recipient should receive tokens");
+    }
+
     // function test_version() public view {
     //     assertEq(portal.version(), "1.1.0");
     // }
