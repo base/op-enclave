@@ -36,8 +36,8 @@ func main() {
 		}
 		_ = r.Body.Close()
 
-		conn := pool.Get().(*vsock.Conn)
-		if conn == nil {
+		conn, ok := pool.Get().(*vsock.Conn)
+		if !ok || conn == nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
