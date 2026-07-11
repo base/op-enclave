@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	enclave2 "github.com/base/op-enclave/op-enclave/enclave"
 	oplog "github.com/ethereum-optimism/optimism/op-service/log"
@@ -26,7 +27,15 @@ func main() {
 	listener, err := vsock.Listen(1234, &vsock.Config{})
 	if err != nil {
 		log.Warn("Error opening vsock listener, running in HTTP mode", "error", err)
-		err = http.ListenAndServe(":1234", s)
+		srv := &http.Server{
+			Addr:              ":1234",
+			Handler:           s,
+			ReadHeaderTimeout: 10 * time.Second,
+			ReadTimeout:       30 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       60 * time.Second,
+		}
+		err = srv.ListenAndServe()
 	} else {
 		err = s.ServeListener(listener)
 	}

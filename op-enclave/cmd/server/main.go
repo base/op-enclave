@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/mdlayher/vsock"
 )
@@ -28,6 +29,7 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 		req, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Error reading request body: %v", err)
@@ -63,7 +65,15 @@ func main() {
 		_, _ = w.Write(raw)
 	}
 
-	err := http.ListenAndServe(":7333", http.HandlerFunc(handler))
+	srv := &http.Server{
+		Addr:              ":7333",
+		Handler:           http.HandlerFunc(handler),
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
